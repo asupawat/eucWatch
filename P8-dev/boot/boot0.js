@@ -69,7 +69,7 @@ const P8 = {
     setLCDTimeout:(v)=>{P8.ON_TIME=v<5?5:v;},
     setLCDBrightness:(v)=>{P8.BRIGHT=v; brightness(v);},
     init:()=>{
-            var s = STOR.readJSON("settings.json",1)||{ontime:10, bright:3, timezone:1,faceup:true};
+            var s = STOR.readJSON("setting.json",1)||{ontime:10, bright:3, timezone:1,faceup:true};
             P8.ON_TIME=s.ontime;
             P8.time_left=s.ontime;
             P8.BRIGHT=s.bright;
