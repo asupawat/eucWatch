@@ -101,7 +101,7 @@ function startRecord(force) {
     ]
   },[ // Buttons...
     {label:"STOP", cb:()=>{
-      Bangle.removeListener('accel', accelHandler);
+      ACCEL.check(0);
       showMenu();
     }}
   ]);
@@ -129,11 +129,6 @@ function startRecord(force) {
     layout.render(layout.time);
   }
 
-  Bangle.setPollInterval(80); // 12.5 Hz - the default
-  Bangle.on('accel', accelHandler);
+  ACCEL.check(80); // 12.5Hz
+  ACCEL.on("accel",accelHandler);
 }
-
-
-Bangle.loadWidgets();
-Bangle.drawWidgets();
-showMenu();
