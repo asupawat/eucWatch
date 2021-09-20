@@ -84,6 +84,21 @@
       {"name":"heart","url":"heart.app.js"}
     ]
   },
+  { "id": "accellog",
+    "name": "Acceleration Logger",
+    "shortName":"Accel Log",
+    "icon": "app.png",
+    "version":"0.01",
+    "interface": "interface.html",
+    "description": "Logs XYZ acceleration data to a CSV file that can be downloaded to your PC",
+    "tags": "apps",
+    "storage": [
+      {"name":"accellog.app.js","url":"app.js"}
+    ],
+    "data": [
+      {"wildcard":"accellog.?.csv" }
+    ]
+  },
   { "id": "calc",
     "name": "Calculator",
     "icon": "icon.png",
