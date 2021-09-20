@@ -1,134 +1,80 @@
-var fileNumber = 0;
-var MAXLOGS = 9;
-
-function getFileName(n) {
-  return "accellog."+n+".csv";
-}
-
-function showMenu() {
-  var menu = {
-    "" : { title : "Accel Logger" },
-    "File No" : {
-      value : fileNumber,
-      min : 0,
-      max : MAXLOGS,
-      onchange : v => { fileNumber=v; }
-    },
-    "Start" : function() {
-      E.showMenu();
-      startRecord();
-    },
-    "View Logs" : function() {
-      viewLogs();
-    },
-    "Exit" : function() {
-      load();
-    },
-  };
-  E.showMenu(menu);
-}
-
-function viewLog(n) {
-  E.showMessage("Loading...");
-  var f = require("Storage").open(getFileName(n), "r");
-  var records = 0, l = "", ll="";
-  while ((l=f.readLine())!==undefined) {records++;ll=l;}
-  var length = 0;
-  if (ll) length = (ll.split(",")[0]|0)/1000;
-
-  var menu = {
-    "" : { title : "Log "+n }
-  };
-  menu[records+" Records"] = "";
-  menu[length+" Seconds"] = "";
-  menu["DELETE"] = function() {
-    E.showPrompt("Delete Log "+n).then(ok=>{
-      if (ok) {
-        E.showMessage("Erasing...");
-        f.erase();
-        viewLogs();
-      } else viewLog(n);
-    });
-  };
-  menu["< Back"] = function() {
-    viewLogs();
-  };
-
-  E.showMenu(menu);
-}
-
-function viewLogs() {
-  var menu = {
-    "" : { title : "Logs" }
-  };
-
-  var hadLogs = false;
-  for (var i=0;i<=MAXLOGS;i++) {
-    var f = require("Storage").open(getFileName(i), "r");
-    if (f.readLine()!==undefined) {
-      (function(i) {
-        menu["Log "+i] = () => viewLog(i);
-      })(i);
-      hadLogs = true;
+//ACCEL face
+//code is based on a structure fanoush had on dsd6 scripts. 
+face[0] = { //the first face of the hello app, called by using `face.go("hello",0)` from the cli.
+  offms: 120000, //face timeout, will fall to face[1] after it, face[1] is a redirection face, not actually visible.
+  init: function(o){ //put here the elements of the page that will not need refreshing and initializations.
+    this.btn=0;
+    this.last_btn=this.btn;
+	  this.run=true;
+  },
+  show : function(o){
+    if (!this.run) return;
+    if (this.btn!==this.last_btn){
+      this.last_btn=this.btn;
     }
+    this.tid=setTimeout(function(t){ //the face's screen refresh rate. 
+      t.tid=-1;
+      t.show();
+    },50,this);
+  },
+  tid:-1,
+  run:false,
+  clear : function(){ //enter here everything needed to clear all app running function on face exit. 
+    g.clear(); //as above
+    this.run=false;
+    if (this.tid>=0) clearTimeout(this.tid); //clears main face[0] timeout loop.
+    this.tid=-1;
+    return true;
+  },
+  off: function(){
+    P8.sleep();
+    this.clear();
   }
-  if (!hadLogs)
-    menu["No Logs Found"] = function(){};
-  menu["< Back"] = function() { showMenu(); };
-  E.showMenu(menu);
-}
-
-function startRecord(force) {
-  if (!force) {
-    // check for existing file
-    var f = require("Storage").open(getFileName(fileNumber), "r");
-    if (f.readLine()!==undefined)
-      return E.showPrompt("Overwrite Log "+fileNumber+"?").then(ok=>{
-        if (ok) startRecord(true); else showMenu();
-      });
+};
+//Redirection face, is used when time expires or the side button is pressed on page[0].
+face[1] = {
+  offms:1000,
+  init: function(){
+  return true;
+  },//only use this part of the face to set redirection.
+  show : function(){
+   	face.go(face.appRoot[0],face.appRoot[1]); //go to the previous face on screen of the previous app.  
+	//face.go(face.appPrev,face.pagePrev); //go to the previous face on screen, even if it was on the same app. 
+  //face.go("hello",-1); //sleep and set this face as the on_wake face. 
+	//face.go("main",-1);//sleep and set this face as the on_wake face. 
+	//face.go("main",0);//go to main Clock face. 
+    return true;
+  },
+   clear: function(){
+   return true;
+  },
+   off: function(){
+   P8.sleep();
+   this.clear();
   }
-  // display
-  g.clear(1);
-  Bangle.drawWidgets();
-
-  var Layout = require("Layout");
-  var layout = new Layout({ type: "v", c: [
-      {type:"txt", font:"6x8", label:"Samples", pad:2},
-      {type:"txt", id:"samples", font:"6x8:2", label:"  -  ", pad:5},
-      {type:"txt", font:"6x8", label:"Time", pad:2},
-      {type:"txt", id:"time", font:"6x8:2", label:"  -  ", pad:5},
-      {type:"txt", font:"6x8:2", label:"RECORDING", bgCol:"#f00", pad:5, fillx:true},
-    ]
-  },[ // Buttons...
-    {label:"STOP", cb:()=>{
-      ACCEL.check(0);
-      showMenu();
-    }}
-  ]);
-  layout.update();
-  layout.render();
-
-  // now start writing
-  var f = require("Storage").open(getFileName(fileNumber), "w");
-  f.write("Time (ms),X,Y,Z\n");
-  var start = getTime();
-  var sampleCount = 0;
-
-  function accelHandler(accel) {
-    var t = getTime()-start;
-    f.write([
-      t*1000,
-      accel.x*8192,
-      accel.y*8192,
-      accel.z*8192].map(n=>Math.round(n)).join(",")+"\n");
-
-    sampleCount++;
-    layout.samples.label = sampleCount;
-    layout.time.label = Math.round(t)+"s";
-    layout.render(layout.samples);
-    layout.render(layout.time);
+};	
+//touch actions are set here, e is the event, x,y are the coordinates on screen.
+touchHandler[0]=function(e,x,y){ 
+  switch (e) {
+  case 5: //tap event
+	  digitalPulse(D16,1,50);
+    face[0].btn=1-face[0].btn;
+    break;
+  case 1: //slide down event-on directional swipes the x,y indicate the point of starting the swipe, so one can swipe up/dn on buttons like on the brightenss button at the main settings face. 
+    face.go("main",0);return;
+    //break;
+  case 2: //slide up event
+    face.go(face.appPrev,face.pagePrev);return;
+  case 3: //slide left event
+    digitalPulse(D16,1,40);    
+    break;
+  case 4: //slide right event (back action)
+    face.go(face.appPrev,face.pagePrev);return; //return when changing faces, so that this action will not reset this face timeout. 
+    //break;
+  case 12: //touch and hold(long press) event
+    digitalPulse(D16,1,40);  
+    break;
+  default: //reset face timeout on every touch action, this function is in the handler file. 
+    this.timeout();
   }
-
-  ACCEL.check(80); // 12.5Hz
-  ACCEL.on("accel",accelHandler);
-}
+};
