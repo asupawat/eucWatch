@@ -55,6 +55,7 @@ const P8 = {
     bpm : [0,0,0],
     ess_values : [],
     ess_stddev : [],
+    movehrm : 0,
     move10 : 0,
     move : 0,
     nmove : 0,
@@ -154,8 +155,8 @@ if (P8.FACEUP && Boolean(STOR.read("accel.js"))){
         const stddev = Math.sqrt(P8.ess_values.map(val => Math.pow(val-mean,2)).reduce((prev,cur) => prev+cur)/P8.ess_values.length);
         if(P8.ess_stddev.length == 3) {
           if(stddev > 6 && P8.ess_stddev[1] > 6 && P8.ess_stddev[2] > 6) {
-            if(P8.ess_stddev[0] > 6) {mvsnds++; P8.move10++;}
-            else {mvsnds+=3; P8.move10+=3;}
+            if(P8.ess_stddev[0] > 6) {mvsnds++; P8.move10++; P8.movehrm++;}
+            else {mvsnds+=3; P8.move10+=3; P8.movehrm+=3;}
             if(mvsnds>=60) {
               P8.move++;
               mvsnds=0;
