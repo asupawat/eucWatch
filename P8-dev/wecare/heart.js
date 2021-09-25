@@ -23,11 +23,21 @@ function hrmHandler(hrm) {
   if (x>=240) x = 0;
 }
 
+function logHandler(hrm) {
+  if(hrm.status=="nodt") {
+    g.setFont("Vector",16);
+    g.setColor(col("black"));
+    g.fillRect(240-(g.stringWidth("NO SIGNAL!")),40,239,56);
+    g.setColor(col("red")).drawString("NO SIGNAL!",240-(g.stringWidth("NO SIGNAL!")),40);
+  }
+}
+
 function startMeasure() {
   if (this.hrmloop) return;
   HRS.start(30); // run for 30sec
   HRS.on("hrm-raw", hrmHandler);
   HRS.on("bpm", bpmHandler);
+  HRS.on("hrmlog", logHandler);
   g.setColor(col("black"));
   if(face[0].heart==true) { g.fillRect(0,80,240,240); face[0].heart=false; }
   digitalPulse(D16,1,40);
@@ -101,7 +111,7 @@ touchHandler[0]=function(e,x,y){
     break;
   case 1: //slide down event
     stopMeasure();
-    face.go("accellog",0);return; //return when changing faces, so that this action will not reset this face timeout. 
+    face.go("accellog",0);return; //return when changing faces, so that this action will not reset this face timeout.
     //break;
   case 2: //slide up event
     stopMeasure();
@@ -117,7 +127,7 @@ touchHandler[0]=function(e,x,y){
     startMeasure();
     g.setFont("Vector",16);
     g.setColor(col("black"));
-    g.fillRect(240-(g.stringWidth("PAUSED")),40,239,56);
+    g.fillRect(120,40,239,56);
     g.setFont("Vector",32);
     face[0].offms=35000;
     this.timeout();
