@@ -127,6 +127,7 @@ var HRS = {
     }
     HRS.enable();
     var bpmtime=0;
+    var beatcount=0;
     this.hrmloop=setInterval(()=>{
       var v = HRS.read();
       //var mov1 = P8.ess_stddev[P8.ess_stddev.length-1];
@@ -135,19 +136,29 @@ var HRS = {
       //if(mov1 < 6 && mov2 < 6 && mov3 < 6) correlator.put(v);
       correlator.put(v);
       if (pulseDetector.isBeat(v)) {
+        beatcount=0;
         var bpm = correlator.bpm();
+        print(beatcount);
         if (bpm > 0 && bpm < 200) {
-          bpm = avgMedFilter.filter(bpm);
-          if(P8.bpm!=bpm) {
+          if(bpmtime>128) bpm = avgMedFilter.filter(bpm);
+          if(P8.bpm!=bpm && bpmtime>256) { //start report ~10s
             P8.bpm[0]=bpm;
             HRS.emit("bpm",{bpm:bpm});
           }
+        }
+      } else {
+        beatcount++;
+        print(beatcount);
+        if(beatcount>128) {
+          HRS.emit("hrmlog",{status:"nodt"});
+          HRS.stop();
+          bpmtime=0;
         }
       }
       HRS.emit("hrm-raw",{raw:v});
       // stop in 30sec 25in40ms=1000ms 30sec=25*30=750
       if(bpmtime>=(25*t)) {
-        HRS.emit("hrmlog");
+        HRS.emit("hrmlog",{status:"done"});
         HRS.stop();
         P8.bpm[1]=Date().getHours();
         P8.bpm[2]=Date().getMinutes();
