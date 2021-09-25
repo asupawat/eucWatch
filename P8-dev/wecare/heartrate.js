@@ -103,17 +103,23 @@ var HRS = {
       HRS.stop();
     }
     if(t) {
-      print("start hrm-log!");
+      print("start log...");
+      var f = require("Storage").open("hrm.csv", "w");
+      //if(set.def.slm && set.def.hrm) f.write("Time,BPM,MOVE,AWAKE\n");
+      //else if(set.def.hrm) f.write("Time,BPM,MOVE\n");
       this.hrmlog=setInterval(()=>{
         HRS.start(30);
         HRS.on("hrmlog",()=>{
-          if(set.def.hrm) {
+          if(set.def.slm && set.def.hrm) {
+            f.write([P8.bpm[1]+":"+P8.bpm[2],P8.bpm[0],P8.movehrm,P8.move10].join(",")+"\n");
             print(P8.bpm);
-          }
-          if(set.def.slm) {
             print(P8.movehrm);
             print(P8.move10);
             P8.move10=0;
+          }
+          else if(set.def.hrm) {
+            f.write([P8.bpm[1]+":"+P8.bpm[2],P8.bpm[0],P8.movehrm].join(",")+"\n");
+            print(P8.bpm);
           }
         });
       },(t*60*1000)); // t minute
@@ -151,7 +157,6 @@ var HRS = {
         }
       } else {
         beatcount++;
-        print(beatcount);
         if(beatcount>150) {
           HRS.emit("hrmlog",{status:"nodt"});
           HRS.stop();
