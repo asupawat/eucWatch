@@ -111,6 +111,7 @@ var HRS = {
             print(P8.bpm);
           }
           if(set.def.slm) {
+            print(P8.movehrm);
             print(P8.move10);
             P8.move10=0;
           }
@@ -124,8 +125,11 @@ var HRS = {
       clearInterval(this.hrmloop);
       this.hrmloop=0;
       HRS.disable();
+      if(this.accloop) ACCEL.check(0);
     }
     HRS.enable();
+    ACCEL.check(80); //enable accel at 12.5Hz
+    P8.movehrm=0;
     var bpmtime=0;
     var beatcount=0;
     this.hrmloop=setInterval(()=>{
@@ -138,7 +142,6 @@ var HRS = {
       if (pulseDetector.isBeat(v)) {
         beatcount=0;
         var bpm = correlator.bpm();
-        print(beatcount);
         if (bpm > 0 && bpm < 200) {
           if(bpmtime>128) bpm = avgMedFilter.filter(bpm);
           if(P8.bpm!=bpm && bpmtime>256) { //start report ~10s
@@ -149,7 +152,7 @@ var HRS = {
       } else {
         beatcount++;
         print(beatcount);
-        if(beatcount>128) {
+        if(beatcount>150) {
           HRS.emit("hrmlog",{status:"nodt"});
           HRS.stop();
           bpmtime=0;
@@ -174,5 +177,6 @@ var HRS = {
       this.hrmloop=0;
       HRS.disable();
     }
+    if(this.accloop) ACCEL.check(0);
   },
 };
