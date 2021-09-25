@@ -4,10 +4,10 @@
   </head>
   <body>
 
-    <p>Device Name: <input type="text" id="devname" class="form-input" value="P8-eucWatch"></p>
+    <p>Device Name: <input type="text" id="devname" class="form-input" value="WeCare"></p>
 	<p>Touch controler type: <select type="text" id="touchtype" value="716" class="form-select"><option>716</option><option>816</option><option>816s</option></select></p>
-	<p>Accelerator type: <select type="text" id="acctype" value="BMA421" class="form-select"><option>BMA421</option><option>SC7A20</option></select></p>
-    <p>Timezone: <input type="text" id="timezone" class="form-input" value="3"></p>
+	<p>Accelerator type: <select type="text" id="acctype" value="SC7A20" class="form-select"><option>BMA421</option><option>SC7A20</option></select></p>
+    <p>Timezone: <input type="text" id="timezone" class="form-input" value="7"></p>
 
     <p><button id="upload" class="btn btn-primary">Upload</button></p>
 
@@ -38,7 +38,7 @@
         // send finished app
         sendCustomizedApp({
           storage:[
-            {name:"setting.json", url:"handler", content:app},
+            {name:"setting.json", url:"wecare", content:app},
           ]
         });
       });
