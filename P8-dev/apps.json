@@ -22,7 +22,7 @@
 	{"name":"devmode","url":"devmode"},
 	{"name":".boot0","url":"boot0.js"},
         {"name":"lcd.js","url":"lcd.js"},
-	{"name":"accel","url":"accel.js"},
+	{"name":"accel.js","url":"accel.js"},
 	{"name":"touch.js","url":"touch_716.js"},
   	{"name":"events.js","url":"events.js"},
   	{"name":"faces.js","url":"faces.js"},
@@ -34,7 +34,7 @@
 	{"name":"call","url":"call.js"},
 	{"name":"alarm","url":"alarm.js"},
 	{"name":"heart","url":"heart.js"},
-	{"name":"heartrate","url":"heartrate.js"},
+	{"name":"heartrate.js","url":"heartrate.js"},
 	{"name":"accellog","url":"accellog.js"},
 	{"name":"calc","url":"calc.js"},
 	{"name":"notify","url":"notify.js"}
