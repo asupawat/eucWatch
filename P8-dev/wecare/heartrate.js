@@ -102,6 +102,7 @@ var HRS = {
       clearInterval(this.hrmlog);
       HRS.stop();
     }
+    if(!this.accloop && set.def.slm) ACCEL.check(80);
     if(t) {
       print("start log...");
       var f = require("Storage").open("hrm.csv", "w");
@@ -131,10 +132,10 @@ var HRS = {
       clearInterval(this.hrmloop);
       this.hrmloop=0;
       HRS.disable();
-      if(this.accloop) ACCEL.check(0);
+      if(this.accloop && !set.def.slm) ACCEL.check(0);
     }
     HRS.enable();
-    ACCEL.check(80); //enable accel at 12.5Hz
+    if(!this.accloop) ACCEL.check(80); //enable accel at 12.5Hz
     P8.movehrm=0;
     var bpmtime=0;
     var beatcount=0;
@@ -182,6 +183,6 @@ var HRS = {
       this.hrmloop=0;
       HRS.disable();
     }
-    if(this.accloop) ACCEL.check(0);
+    if(this.accloop && !set.def.slm) ACCEL.check(0);
   },
 };

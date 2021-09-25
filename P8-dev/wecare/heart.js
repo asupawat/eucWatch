@@ -111,11 +111,11 @@ touchHandler[0]=function(e,x,y){
     break;
   case 1: //slide down event
     stopMeasure();
-    face.go("accellog",0);return; //return when changing faces, so that this action will not reset this face timeout.
+    face.go("accellog",0);return; //return when changing faces, so that this action will not reset this face timeout. 
     //break;
   case 2: //slide up event
     stopMeasure();
-    face.go("hello",0);return;
+    face.go("call",0);return;
   case 3: //slide left event
     stopMeasure();
     g.setFont("Vector",16);
