@@ -37,7 +37,10 @@
 	{"name":"heartrate.js","url":"heartrate.js"},
 	{"name":"accellog","url":"accellog.js"},
 	{"name":"calc","url":"calc.js"},
-	{"name":"notify","url":"notify.js"}
+	{"name":"notify","url":"notify.js"},
+	{"name":"call.img","url":"call.img"},
+	{"name":"heart.img","url":"heart.img"},
+	{"name":"nurse.img","url":"nurse.img"}
     ]
   },
   { "id": "boot",
