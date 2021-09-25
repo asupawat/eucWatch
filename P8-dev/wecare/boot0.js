@@ -21,7 +21,7 @@ if (BTN1.read() || Boolean(require("Storage").read("devmode"))) {
     require("Storage").write("devmode","done");
     NRF.setAdvertising({}, { name:"Espruino-devmode",connectable:true });
     digitalPulse(D16,1,100);
-	print("Welcome!\n*** DevMode ***\nShort press the side button\nto restart in WorkingMode");
+	  print("Welcome!\n*** DevMode ***\nShort press the side button\nto restart in WorkingMode");
   }
   setWatch(function(){
     "ram";
@@ -31,7 +31,7 @@ if (BTN1.read() || Boolean(require("Storage").read("devmode"))) {
     NRF.setServices({},{uart:true}); 
     NRF.disconnect();
     setTimeout(() => {
-	 reset();
+	     reset();
     }, 500);
   },BTN1,{repeat:false, edge:"rising"}); 
 }else{ 
@@ -137,16 +137,17 @@ TC.start();
 //TC.on("longtouch", (p)=> {P8.time_left=P8.ON_TIME;if (D17.read()) reset(); else face.go("main",0); }); //load("launch.js");
 
 eval(STOR.read("setter.js"));
+eval(STOR.read("heartrate.js"));
 
 if (P8.FACEUP && Boolean(STOR.read("accel.js"))){ 
 	eval(STOR.read("accel.js"));
   ACCEL.init();
 	ACCEL.on("faceup",()=>{if (!P8.awake&&set.def.acc) P8.wake();});
-  if(set.def.slm) ACCEL.check(80); // 12.5Hz
+  if(set.def.slm) HRS.log(5); // log every 5min
   var slsnds = 0; // seconds within non-movement
   var mvsnds = 0; // seconds within movement
   ACCEL.on("accel",()=>{
-    if(set.def.slm) { // if sleep monitor set
+    if(this.accloop) {
       var val = P8.accmag;
       P8.ess_values.push(val);
       if (P8.ess_values.length == 13) {
@@ -155,8 +156,16 @@ if (P8.FACEUP && Boolean(STOR.read("accel.js"))){
         const stddev = Math.sqrt(P8.ess_values.map(val => Math.pow(val-mean,2)).reduce((prev,cur) => prev+cur)/P8.ess_values.length);
         if(P8.ess_stddev.length == 3) {
           if(stddev > 6 && P8.ess_stddev[1] > 6 && P8.ess_stddev[2] > 6) {
-            if(P8.ess_stddev[0] > 6) {mvsnds++; P8.move10++; P8.movehrm++;}
-            else {mvsnds+=3; P8.move10+=3; P8.movehrm+=3;}
+            if(P8.ess_stddev[0] > 6) {
+              mvsnds++;
+              P8.move10++;
+              if(this.hrmloop) P8.movehrm++;
+            }
+            else {
+              mvsnds+=3;
+              P8.move10+=3;
+              if(this.hrmloop) P8.movehrm+=3;
+            }
             if(mvsnds>=60) {
               P8.move++;
               mvsnds=0;
@@ -193,7 +202,6 @@ setWatch(() =>{
 },D17,{repeat:true,edge:"falling"});
 }
 
-eval(STOR.read("heartrate.js"));
 eval(STOR.read("events.js"));
 eval(STOR.read("faces.js"));
 eval(STOR.read("themes.js"));
