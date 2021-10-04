@@ -4,8 +4,8 @@ var valdef={
   hrm:[],
   sleep:[300,340,280,370],
   awake:[36,32,38,27],
-  startsleep:22,
-  endsleep:6
+  lastbpm:[],
+  sleeptime:[21,30,6,30]
 };
 
 valdef = require('Storage').readJSON('valuedef.json', 1);
