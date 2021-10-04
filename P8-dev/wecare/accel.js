@@ -58,8 +58,9 @@ var ACCEL = {
         var i = (hi<<8)+lo;
         return ((i & 0x7FFF) - (i & 0x8000))/16;
       }
-      if (set.def.acctype==="BMA421") var read_addr=0x12;
-      else var read_addr=0xA8;
+      var read_add;
+      if (set.def.acctype==="BMA421") read_addr=0x12;
+      else read_addr=0xA8;
       var a = ACCEL.readBytes(read_addr,6);
       var x = conv(a[0],a[1]);
       var y = conv(a[2],a[3]);
