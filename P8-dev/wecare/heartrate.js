@@ -68,7 +68,7 @@ function hrmtocsv(msg) {
   print(msg.status);
   print(valdef.lastbpm[0]);
   if(msg.status=="done") {
-    if(set.def.slm && (Date().getHours()>=valdef.startsleep || Date().getHours()<valdef.endsleep)) {
+    if(set.def.slm && (Date().getHours()>=valdef.sleeptime[0] || Date().getHours()<valdef.sleeptime[2])) {
       set.def.hrm=1;
       f1.write([valdef.lastbpm[1]+":"+valdef.lastbpm[2],valdef.lastbpm[0],P8.movehrm.toFixed(0),P8.move10].join(",")+"\n");
       P8.move10=0;
@@ -147,7 +147,7 @@ var HRS = {
       clearInterval(this.hrmloop);
       this.hrmloop=0;
       HRS.disable();
-      if(ACCEL.loop() && !set.def.slm && (Date().getHours()>=valdef.startsleep || Date().getHours()<valdef.endsleep)) ACCEL.check(0);
+      if(ACCEL.loop() && !set.def.slm && (Date().getHours()>=valdef.sleeptime[0] || Date().getHours()<valdef.sleeptime[2])) ACCEL.check(0);
     }
     HRS.on("hrmlog",hrmtocsv);
     HRS.enable();
@@ -236,7 +236,7 @@ var HRS = {
       this.hrmloop=0;
       HRS.disable();
     }
-    if(ACCEL.loop() && !set.def.slm && (Date().getHours()>=valdef.startsleep || Date().getHours()<valdef.endsleep)) ACCEL.check(0);
+    if(ACCEL.loop() && !set.def.slm && (Date().getHours()>=valdef.sleeptime[0] || Date().getHours()<valdef.sleeptime[2])) ACCEL.check(0);
   },
 };
 HRS.disable();
