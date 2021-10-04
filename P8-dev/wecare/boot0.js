@@ -137,6 +137,7 @@ TC.start();
 //TC.on('swipe',(d)=>{P8.time_left=P8.ON_TIME;});
 //TC.on("longtouch", (p)=> {P8.time_left=P8.ON_TIME;if (D17.read()) reset(); else face.go("main",0); }); //load("launch.js");
 
+eval(STOR.read("mqtt.js"));
 eval(STOR.read("setter.js"));
 eval(STOR.read("heartrate.js"));
 
@@ -214,5 +215,5 @@ eval(STOR.read("faces.js"));
 eval(STOR.read("themes.js"));
 eval(STOR.read("main"));
 
-if (STOR.read("mqtt.js")) eval(STOR.read("mqtt.js"));
+init_mqtt();
 
