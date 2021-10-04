@@ -96,10 +96,10 @@ var set={
     }
     else if (this.bt!=0) {
       NRF.disconnect();
-      //NRF.restart();
     }
     else if (this.btsl==1) {
       NRF.restart();
+      init_mqtt();
       this.btsl=0;
     }
   }
@@ -107,45 +107,39 @@ var set={
 
 set.def = require('Storage').readJSON('setting.json', 1);
 if (!set.def) set.resetSettings();
-//
 //eval(require('Storage').read('handler.set')); //get defaults
 E.setTimeZone(set.def.timezone);
 
 function bdis() {
   Bluetooth.removeListener('data',ccon);
-	E.setConsole(null,{force:true});
+  E.setConsole(null,{force:true});
   if (!set.def.cli&&!set.def.gb&&!set.def.atc&&!set.def.hid){
     NRF.sleep();
     set.btsl=1;
-  }	
-	//if (set.bt==1) handleInfoEvent({"src":"BT","title":"BT","body":"Disconnected"});
-	//else if (set.bt==2) handleInfoEvent({"src":"BT","title":"IDE","body":"Disconnected"});
-	//else if (set.bt==3) handleInfoEvent({"src":"BT","title":"GB","body":"Disconnected"});
-	//else if (set.bt==4) handleInfoEvent({"src":"BT","title":"ATC","body":"Disconnected"});
-	//else if (set.bt==5) handleInfoEvent({"src":"BT","title":"ESP","body":"Disconnected"});
+  }
   set.bt=0;
 }
 
 function bcon() {
-	set.bt=1;
-	if (set.def.cli==1||set.def.gb==1)  Bluetooth.on('data',ccon);
+  set.bt=1;
+  if (set.def.cli==1||set.def.gb==1)  Bluetooth.on('data',ccon);
 }
 
 function ccon(l){
   var cli="\x03";
   var gb="\x20\x03";
-	if (set.def.cli) {
-		if (l.startsWith(cli)) {
+  if (set.def.cli) {
+    if (l.startsWith(cli)) {
       set.bt=2;Bluetooth.removeListener('data',ccon);
       E.setConsole(Bluetooth,{force:false});
-		  print("Welcome.\n** Working mode **\nUse devmode (Settings-Info-long press on Restart) for uploading files."); 
-		  handleInfoEvent({"src":"BT","title":"IDE","body":"Connected"});
-	  }
+      print("Welcome.\n** Working mode **\nUse devmode (Settings-Info-long press on Restart) for uploading files."); 
+      handleInfoEvent({"src":"BT","title":"IDE","body":"Connected"});
+    }
   }
   if (set.def.gb) if (l.startsWith(gb)){
-		set.bt=3;Bluetooth.removeListener('data',ccon);E.setConsole(Bluetooth,{force:false});
-		handleInfoEvent({"src":"BT","title":"GB","body":"Connected"});
-	}
+    set.bt=3;Bluetooth.removeListener('data',ccon);E.setConsole(Bluetooth,{force:false});
+    handleInfoEvent({"src":"BT","title":"GB","body":"Connected"});
+  }
   if (l.length>5)  NRF.disconnect();
 }
 
