@@ -12,7 +12,7 @@
   { "id": "wecare",
     "name": "WeCare",
     "icon": "icon.png",
-    "version":"0.01",
+    "version":"0.02",
     "description": "WeCare Project",
     "tags": "core",
     "custom": "custom.html",
