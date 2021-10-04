@@ -34,13 +34,15 @@
 	{"name":"call","url":"call.js"},
 	{"name":"alarm","url":"alarm.js"},
 	{"name":"heart","url":"heart.js"},
+	{"name":"sleep","url":"sleep.js"},
 	{"name":"heartrate.js","url":"heartrate.js"},
 	{"name":"accellog","url":"accellog.js"},
 	{"name":"calc","url":"calc.js"},
 	{"name":"notify","url":"notify.js"},
 	{"name":"call.img","url":"call.img"},
 	{"name":"heart.img","url":"heart.img"},
-	{"name":"nurse.img","url":"nurse.img"}
+	{"name":"nurse.img","url":"nurse.img"},
+	{"name":"valuedef.json","url":"valuedef.json"}
     ]
   },
   { "id": "boot",
