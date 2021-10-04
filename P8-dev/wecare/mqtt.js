@@ -88,28 +88,29 @@ function pushMQTTData() {
   }
 }
 
-NRF.setServices({
-  'ac910001-43be-801f-3ffc-65d26351c312' : {
-    'ac910002-43be-801f-3ffc-65d26351c312' : { // tx - from bridge TO node
-      writable: true,
-      value : "",
-      maxLen : 20,
-      onWrite : function(evt) {
-        b = evt.data;
-        if (evt.data.length) mqtt.onData(E.toString(evt.data));
-        pushMQTTData();
+function init_mqtt() {
+  NRF.setServices({
+    'ac910001-43be-801f-3ffc-65d26351c312' : {
+      'ac910002-43be-801f-3ffc-65d26351c312' : { // tx - from bridge TO node
+        writable: true,
+        value : "",
+        maxLen : 20,
+        onWrite : function(evt) {
+          b = evt.data;
+          if (evt.data.length) mqtt.onData(E.toString(evt.data));
+          pushMQTTData();
+        }
+      }, 'ac910003-43be-801f-3ffc-65d26351c312': { // rx - from node TO bridge
+        notify: true,
+        value : "",
+        maxLen : 20
       }
-    }, 'ac910003-43be-801f-3ffc-65d26351c312': { // rx - from node TO bridge
-      notify: true,
-      value : "",
-      maxLen : 20
     }
-  }
-});
+  });
 
-NRF.setScanResponse([]); // remove scan response packet
-mqttHasData(false);
-NRF.setTxPower(4);
+  NRF.setScanResponse([]); // remove scan response packet
+  mqttHasData(false);
+}
 
 // ===============================================
 
