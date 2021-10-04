@@ -1,26 +1,32 @@
-//Hello face
+//call
 //code is based on a structure fanoush had on dsd6 scripts. 
-face[0] = { //the first face of the hello app, called by using `face.go("hello",0)` from the cli.
+face[0] = { //the first face of the call app, called by using `face.go("call",0)` from the cli.
   offms: 10000, //face timeout, will fall to face[1] after it, face[1] is a redirection face, not actually visible.
   init: function(o){ //put here the elements of the page that will not need refreshing and initializations.
     //the way g.setColor is used on this project is not the espruino default. You can see changes on it at the init file. The screen driver is set at two colors mode to save on ram, and a flip is used when more colors are needed. The first argument is the color space, 0 or 1, the second argument is the actual color in 12-bit Color code. https://rangevoting.org/ColorCode.html#
+    g.setColor(col("dgray1")); //header
+    g.fillRect(0,0,239,35); 
+    g.setColor(col("lblue"));
+    g.setFont("Vector",25);
     if(o=="acp" || this.inp=="acp") {
       g.setColor("#0F0");
       g.fillCircle(120,110,95);
       g.drawImage(require("Storage").read("nurse.img"),55,17);
       if(o=="acp") {
         digitalPulse(D16,1,[200,300,100,100,100]);
-        handleMqttEvent({"src":"BT","title":"NURSE","body":"IS COMING"});
+        handleMqttEvent({"src":"ADMIN","title":"NURSE","body":"IS COMING"});
       }
       if(this.inp=="acp") mqtt.publish("user", "answer");
     } else if(o=="ack") {
+      g.drawString("CALLING NURSE",15,6);
       g.setColor("#0F0");
-      g.drawImage(require("Storage").read("call.img"),30,20);
+      g.drawImage(require("Storage").read("call.img"),30,45);
       digitalPulse(D16,1,[80,100,40]); //send double buzz pulse to indicate tap was acknowledged.
     }
     else {
+      g.drawString("CALL NURSE",40,6);
       g.setColor("#F00");
-      g.drawImage(require("Storage").read("call.img"),30,20);
+      g.drawImage(require("Storage").read("call.img"),30,45);
     }
     this.inp=o;
     this.btn=0;
@@ -62,12 +68,11 @@ face[1] = {
   show : function(){
   //face.go(face.appRoot[0],face.appRoot[1]); //go to the previous face on screen of the previous app.  
 	//face.go(face.appPrev,face.pagePrev); //go to the previous face on screen, even if it was on the same app. 
-  //face.go("hello",-1); //sleep and set this face as the on_wake face. 
 	//face.go("main",-1);//sleep and set this face as the on_wake face. 
 	//face.go("main",0);//go to main Clock face.
-    if(face[0].inp=="acp") face.go("hello",-1);
+    if(face[0].inp=="acp") face.go("call",-1);
     else face.go("main",-1);
-    //face.appPrev="hello";
+    //face.appPrev="call";
     //face.pagePrev=0;
     return true;
   },
@@ -109,6 +114,7 @@ touchHandler[0]=function(e,x,y){
       face.go("main",-1);
       return true;
     } else {
+      handleMqttEvent({"src":"PATIENT","title":"CALLING","body":"FOR HELP"});
       mqtt.publish("call", "help");
       digitalPulse(D16,1,[80,100,40]);
       break;

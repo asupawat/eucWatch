@@ -53,6 +53,32 @@ var pulseDetector = (function(){
   };
 })();
 
+function StandardDeviation (array) {
+  const n = array.length;
+  const mean = E.sum(array) / n; //array.reduce((a, b) => a + b) / n;
+  //return Math.sqrt(array.map(x => Math.pow(x - mean, 2)).reduce((a, b) => a + b) / n);
+  return Math.sqrt(E.variance(array, mean));
+}
+
+var f1 = require("Storage").open("sleep.0.csv", "w");
+var f2 = require("Storage").open("hrm.0.csv", "w");
+
+function hrmtocsv(msg) {
+  HRS.removeListener("hrmlog", hrmtocsv);
+  print(msg.status);
+  print(valdef.lastbpm[0]);
+  if(msg.status=="done") {
+    if(set.def.slm && (Date().getHours()>=valdef.startsleep || Date().getHours()<valdef.endsleep)) {
+      set.def.hrm=1;
+      f1.write([valdef.lastbpm[1]+":"+valdef.lastbpm[2],valdef.lastbpm[0],P8.movehrm.toFixed(0),P8.move10].join(",")+"\n");
+      P8.move10=0;
+    }
+    if(set.def.hrm) {
+      f2.write([valdef.lastbpm[1]+":"+valdef.lastbpm[2],valdef.lastbpm[0],P8.movehrm.toFixed(0)].join(",")+"\n");
+    }
+  }
+}
+
 var HRS = {
   writeByte:(a,d) => {
       i2c.writeTo(0x44,a,d);
@@ -61,11 +87,12 @@ var HRS = {
       i2c.writeTo(0x44, a);
       return i2c.readFrom(0x44,1)[0];
   },
+  loop:() => {return this.hrmloop;},
   enable:() => {
-    HRS.writeByte( 0x17, 0x0d ); //00001101  bits[4:2]=011,HRS gain 8
+    HRS.writeByte( 0x17, 0b00001101 ); //00001101  bits[4:2]=011,HRS gain 8
     HRS.writeByte( 0x16, 0x78 ); //01111000  bits[3:0]=1000,HRS 16bits
     HRS.writeByte( 0x01, 0xd0 ); //11010000  bit[7]=1,HRS enable;bit[6:4]=101,wait time=50ms,bit[3]=0,LED DRIVE=12.5 mA
-    HRS.writeByte( 0x0c, 0x2e ); //00101110  bit[6]=0,LED DRIVE=12.5mA;bit[5]=0,sleep mode;p_pulse=1110,duty=50% 
+    HRS.writeByte( 0x0c, 0x6e ); //00101110  bit[6]=0,LED DRIVE=12.5mA;bit[5]=0,sleep mode;p_pulse=1110,duty=50% 
   },
   disable:() => {
     HRS.writeByte( 0x01, 0x08 );
@@ -98,91 +125,118 @@ var HRS = {
       return lpfFilter.filter(agcFilter.filter(medianFilter.filter(hpfFilter.filter(v))));
   },
   log:(t)=>{
-    if(this.hrmlog) {
+    //if(t>0) t=1; //******remove*******/
+    if(this.hrmlog && !set.def.slm && !set.def.hrm) {
       clearInterval(this.hrmlog);
+      this.hrmlog=0;
       HRS.stop();
+      print("***stop hrm log");
     }
-    if(!this.accloop && set.def.slm) ACCEL.check(80);
+    if(!ACCEL.loop() && set.def.slm) ACCEL.check(80);
     if(t) {
-      print("start log...");
-      var f = require("Storage").open("hrm.csv", "w");
-      //if(set.def.slm && set.def.hrm) f.write("Time,BPM,MOVE,AWAKE\n");
-      //else if(set.def.hrm) f.write("Time,BPM,MOVE\n");
+      print("***start hrm log");
       this.hrmlog=setInterval(()=>{
-        HRS.start(30);
-        HRS.on("hrmlog",()=>{
-          if(set.def.slm && set.def.hrm) {
-            f.write([P8.bpm[1]+":"+P8.bpm[2],P8.bpm[0],P8.movehrm,P8.move10].join(",")+"\n");
-            print(P8.bpm);
-            print(P8.movehrm);
-            print(P8.move10);
-            P8.move10=0;
-          }
-          else if(set.def.hrm) {
-            f.write([P8.bpm[1]+":"+P8.bpm[2],P8.bpm[0],P8.movehrm].join(",")+"\n");
-            print(P8.bpm);
-          }
-        });
+        if(!this.hrmloop) HRS.start(30);
       },(t*60*1000)); // t minute
     }
   },
+  bpm:[],
   start:(t)=>{
+    print("start hrm "+t+"s");
     if (this.hrmloop) {
-      HRS.removeAllListeners();
       clearInterval(this.hrmloop);
       this.hrmloop=0;
       HRS.disable();
-      if(this.accloop && !set.def.slm) ACCEL.check(0);
+      if(ACCEL.loop() && !set.def.slm && (Date().getHours()>=valdef.startsleep || Date().getHours()<valdef.endsleep)) ACCEL.check(0);
     }
+    HRS.on("hrmlog",hrmtocsv);
     HRS.enable();
-    if(!this.accloop) ACCEL.check(80); //enable accel at 12.5Hz
+    if(!ACCEL.loop()) ACCEL.check(80); //enable accel at 12.5Hz
     P8.movehrm=0;
+    HRS.bpm=[];
     var bpmtime=0;
     var beatcount=0;
+    var movetime=0;
     this.hrmloop=setInterval(()=>{
-      var v = HRS.read();
-      //var mov1 = P8.ess_stddev[P8.ess_stddev.length-1];
-      //var mov2 = P8.ess_stddev[P8.ess_stddev.length-2];
-      //var mov3 = P8.ess_stddev[P8.ess_stddev.length-3];
-      //if(mov1 < 6 && mov2 < 6 && mov3 < 6) correlator.put(v);
-      correlator.put(v);
-      if (pulseDetector.isBeat(v)) {
-        beatcount=0;
-        var bpm = correlator.bpm();
-        if (bpm > 0 && bpm < 200) {
-          if(bpmtime>128) bpm = avgMedFilter.filter(bpm);
-          if(P8.bpm!=bpm && bpmtime>256) { //start report ~10s
-            P8.bpm[0]=bpm;
-            HRS.emit("bpm",{bpm:bpm});
+      var mov1 = P8.ess_stddev[P8.ess_stddev.length-1];
+      var mov2 = P8.ess_stddev[P8.ess_stddev.length-2];
+      var mov3 = P8.ess_stddev[P8.ess_stddev.length-3];
+      var v;
+      if(mov1<6) {
+        v = HRS.read();
+        correlator.put(v);
+      }
+      if(mov1 < 6 && mov2 < 6 && mov3 < 6) {
+        if (pulseDetector.isBeat(v)) {
+          beatcount=0;
+          var bpm = correlator.bpm();
+          if (bpm > 0 && bpm < 200) {
+            HRS.bpm.push(bpm);
+            if(bpmtime>128) bpm = avgMedFilter.filter(bpm);
+            if(valdef.lastbpm[0]!=bpm && bpmtime>256) { //start report ~10s
+              valdef.lastbpm[0]=bpm;
+              HRS.emit("bpm",{bpm:bpm});
+            }
+          }
+        } else {
+          beatcount++;
+          if(beatcount>150) {
+            HRS.emit("hrmlog",{status:"nodt"});
+            HRS.stop();
+            bpmtime=0;
+            movetime=0;
           }
         }
-      } else {
-        beatcount++;
-        if(beatcount>150) {
-          HRS.emit("hrmlog",{status:"nodt"});
+        bpmtime++;
+        HRS.emit("hrm-raw",{raw:v});
+      }
+      else {
+        movetime++;
+        if(movetime>500) {// 20sec
+          HRS.emit("hrmlog",{status:"mvdt"});
           HRS.stop();
           bpmtime=0;
+          movetime=0;
         }
       }
-      HRS.emit("hrm-raw",{raw:v});
       // stop in 30sec 25in40ms=1000ms 30sec=25*30=750
       if(bpmtime>=(25*t)) {
-        HRS.emit("hrmlog",{status:"done"});
         HRS.stop();
-        P8.bpm[1]=Date().getHours();
-        P8.bpm[2]=Date().getMinutes();
+        //print(HRS.bpm.length);
+        HRS.bpm=HRS.bpm.sort();
+        var std;
+        for(let i=0;i<3;i++) {
+          HRS.bpm=HRS.bpm.slice(5,HRS.bpm.length-5);
+          std=StandardDeviation(HRS.bpm);
+          //print(HRS.bpm);
+          //print(std);
+          if(std<12) i=3;
+        }
+        if(std<12 && HRS.bpm.length>=10) {
+          valdef.lastbpm[0]=(E.sum(HRS.bpm)/HRS.bpm.length).toFixed(0);
+          valdef.lastbpm[1]=Date().getHours();
+          valdef.lastbpm[2]=Date().getMinutes();
+          if(valdef.hrm.length == 12) valdef.hrm.shift();
+          valdef.hrm.push(valdef.lastbpm[0]);
+          set.updateSensorVal();
+          HRS.emit("bpm",{bpm:valdef.lastbpm[0]});
+          HRS.emit("hrmlog",{status:"done"});
+        }
+        else {
+          HRS.emit("hrmlog",{status:"nstd"});
+        }
         bpmtime=0;
+        movetime=0;
       }
-      else bpmtime++;
     },40);
   },
   stop:()=>{
     if (this.hrmloop) {
-      HRS.removeAllListeners();
       clearInterval(this.hrmloop);
       this.hrmloop=0;
       HRS.disable();
     }
-    if(this.accloop && !set.def.slm) ACCEL.check(0);
+    if(ACCEL.loop() && !set.def.slm && (Date().getHours()>=valdef.startsleep || Date().getHours()<valdef.endsleep)) ACCEL.check(0);
   },
 };
+HRS.disable();

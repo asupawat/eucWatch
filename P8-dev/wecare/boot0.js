@@ -19,7 +19,7 @@ if (BTN1.read() || Boolean(require("Storage").read("devmode"))) {
     digitalPulse(D16,1,250);
   } else {
     require("Storage").write("devmode","done");
-    NRF.setAdvertising({}, { name:"Espruino-devmode",connectable:true });
+    NRF.setAdvertising({}, { name:"WeCare-DevMode",connectable:true });
     digitalPulse(D16,1,100);
 	  print("Welcome!\n*** DevMode ***\nShort press the side button\nto restart in WorkingMode");
   }
@@ -55,6 +55,7 @@ const P8 = {
     bpm : [0,0,0],
     ess_values : [],
     ess_stddev : [],
+    hrm : [],
     movehrm : 0,
     move10 : 0,
     move : 0,
@@ -101,9 +102,9 @@ const P8 = {
         if(o=="undefined") face.go(s,0);
         else face.go(s,0,o);
         TC.start();
-        g.lcd_wake();
+        //g.lcd_wake();
         P8.emit("sleep",false);
-        brightness(P8.BRIGHT);
+        //brightness(P8.BRIGHT);
         P8.ticker = setInterval(P8.tick,1000);
         P8.awake = true;
     },
@@ -143,7 +144,7 @@ if (P8.FACEUP && Boolean(STOR.read("accel.js"))){
 	eval(STOR.read("accel.js"));
   ACCEL.init();
 	ACCEL.on("faceup",()=>{if (!P8.awake&&set.def.acc) P8.wake();});
-  if(set.def.slm) HRS.log(5); // log every 5min
+  if(set.def.slm || set.def.hrm) HRS.log(5); // log every 5min
   var slsnds = 0; // seconds within non-movement
   var mvsnds = 0; // seconds within movement
   ACCEL.on("accel",()=>{
@@ -154,17 +155,17 @@ if (P8.FACEUP && Boolean(STOR.read("accel.js"))){
         // calculate standard deviation over ~1s 
         const mean = P8.ess_values.reduce((prev,cur) => cur+prev) / P8.ess_values.length;
         const stddev = Math.sqrt(P8.ess_values.map(val => Math.pow(val-mean,2)).reduce((prev,cur) => prev+cur)/P8.ess_values.length);
-        if(P8.ess_stddev.length == 3) {
+        if(P8.ess_stddev.length >= 3) {
+          //save avg movement during hrm-run
+          if(stddev > 6 && this.hrmloop) P8.movehrm=(P8.movehrm+stddev)/2;
           if(stddev > 6 && P8.ess_stddev[1] > 6 && P8.ess_stddev[2] > 6) {
             if(P8.ess_stddev[0] > 6) {
               mvsnds++;
               P8.move10++;
-              if(this.hrmloop) P8.movehrm++;
             }
             else {
               mvsnds+=3;
               P8.move10+=3;
-              if(this.hrmloop) P8.movehrm+=3;
             }
             if(mvsnds>=60) {
               P8.move++;
@@ -182,14 +183,9 @@ if (P8.FACEUP && Boolean(STOR.read("accel.js"))){
             }
             slsnds++;
           }
-          P8.ess_stddev[0] = P8.ess_stddev[1];
-          P8.ess_stddev[1] = P8.ess_stddev[2];
-          P8.ess_stddev[2] = stddev;
+          P8.ess_stddev.shift();
         }
-        else {P8.ess_stddev.push(stddev);}
-        //print(P8.ess_stddev.length);
-        //print(stddev);
-        //print(P8.ess_stddev[P8.ess_stddev.length-1]);
+        if(P8.ess_stddev.length<3) P8.ess_stddev.push(stddev);
         P8.ess_values = [];
       }
     }
@@ -197,9 +193,20 @@ if (P8.FACEUP && Boolean(STOR.read("accel.js"))){
 }
 P8.ticker = setInterval(P8.tick,1000);
 setWatch(() =>{
-	if ((Date.now()-P8.pressedtime)>5000) E.reboot();
-	if (!P8.awake) P8.wake();
+	if ((Date.now()-P8.pressedtime)>30000) E.reboot();
+  else if ((Date.now()-P8.pressedtime)>5000) reset();
 },D17,{repeat:true,edge:"falling"});
+setWatch(function(e) {
+  if (!P8.awake) P8.wake();
+  else {
+    if(face.appCurr!="call") P8.wake("call");
+    else {
+      digitalPulse(D16,1,[80,100,40]);
+      handleMqttEvent({"src":"SOS","title":"CALLING","body":"FOR HELP"});
+      mqtt.publish("call", "help");
+    }
+  }
+}, D17, { repeat: true, edge: 'rising', debounce: 50 });
 }
 
 eval(STOR.read("events.js"));
@@ -209,5 +216,3 @@ eval(STOR.read("main"));
 
 if (STOR.read("mqtt.js")) eval(STOR.read("mqtt.js"));
 
-//P8.wake();g.setColor(1535);g.fillRect(0,0,240,240);
-//face.go("main",0);

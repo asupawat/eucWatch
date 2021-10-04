@@ -7,6 +7,7 @@ var ACCEL = {
       i2c.writeTo(0x18, a);
       return i2c.readFrom(0x18,n); 
   },
+  loop:() => {return this.accloop;},
   init:() => {
       var id = ACCEL.readBytes(0x0F,1)[0];
       ACCEL.writeByte(0x20,0x47);

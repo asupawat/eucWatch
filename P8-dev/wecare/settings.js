@@ -169,7 +169,7 @@ face[1] = {
 };
 //info face
 face[5] = {
-  offms: 3000,
+  offms: 10000,
   init: function(){
 	var mem=process.memory();
 	var s=(getTime()-set.boot)|0;
@@ -180,25 +180,17 @@ face[5] = {
 	while (s>86400) {s=s-86400;d++;}
 	while (s>3600) {s=s-3600;h++;}
 	while (s>60) {s=s-60;m++;}
-    g.setFont("Vector",18);
+  g.setFont("Vector",18);
 	g.setColor(col("raf"));
 	g.fillRect(0,200,115,239);
 	g.fillRect(125,200,239,239);
 	g.setColor(col("white"));
 	g.drawString("RESTART",15,213);
  	g.drawString("DEVMODE",132,213);
-    g.setColor(colo.txt1);
-//	g.drawString("MEM FREE: "+mem.free+"/"+mem.total,120-(g.stringWidth("MEM FREE: "+mem.free+"/"+mem.total)/2),0);  
-//	g.drawString("VERSION: "+process.version,120-(g.stringWidth("VERSION: "+process.version)/2),25);  
-//	g.drawString("ACC TYPE: "+set.def.acctype,120-(g.stringWidth("ACC TYPE: "+set.def.acctype)/2),50);  
- //   g.drawString("TOUCH TYPE: "+set.def.touchtype,120-(g.stringWidth("TOUCH TYPE: "+set.def.touchtype)/2),75);  
-//    g.drawString("UPTIME: "+d+"D-"+h+"H-"+m+"M",120-(g.stringWidth("UPTIME: "+d+"D-"+h+"H-"+m+"M")/2),100);  
-//	g.drawString("FLASH FREE: "+require("Storage").getFree(),120-(g.stringWidth("FLASH FREE: "+require("Storage").getFree())/2),125); 
-//	g.drawString("TEMPERATURE: "+E.getTemperature(),120-(g.stringWidth("TEMPERATURE: "+E.getTemperature())/2),150);  
-//	g.drawString("NAME: "+set.def.name,120-(g.stringWidth("NAME: "+set.def.name)/2),175);  
+  g.setColor(colo.txt1);
 	this.buf=("MEM FREE: "+mem.free+"/"+mem.total+"\nVERSION: "+process.version+"\nACC TYPE: "+set.def.acctype+"\nTOUCH TYPE: "+set.def.touchtype+"\nUPTIME: "+d+"D-"+h+"H-"+m+"M"+"\nFLASH FREE: "+require("Storage").getFree()+"\nTEMPERATURE: "+E.getTemperature()+"\nNAME: "+set.def.name);
-	g.drawString(this.buf,120-(g.stringWidth(this.buf)/2),0);  
-    face[0].appImgNone=0;
+	g.drawString(this.buf,120-(g.stringWidth(this.buf)/2),0);
+  face[0].appImgNone=0;
   },
   show : function(){
 	return;
@@ -240,10 +232,13 @@ touchHandler[0]=function(e,x,y){
       }else if (face[0].btSet) {
           digitalPulse(D16,1,40);
       }else {
-        set.def.hrm=1-set.def.hrm;
-        if(set.def.hrm) HRS.log(5);//log every 5min
-        else HRS.log(0);
-        digitalPulse(D16,1,[30,50,30]);
+        if(set.def.slm) set.def.hrm=1;
+        else {
+          set.def.hrm=1-set.def.hrm;
+          if(set.def.hrm) HRS.log(5);//log every 5min
+          else HRS.log(0);
+          digitalPulse(D16,1,[30,50,30]);
+        }
       }
     }else if(158<x&&x<239&&y<75){//btn3
       if (face.mode) {if (face[0].appDo3) {digitalPulse(D16,1,[30,50,30]);eval(face[0].appDo3);return;} else digitalPulse(D16,1,40);
@@ -256,10 +251,8 @@ touchHandler[0]=function(e,x,y){
         set.def.gb=1-set.def.gb;set.upd();digitalPulse(D16,1,[30,50,30]);
 		  } else {
         set.def.slm=1-set.def.slm;
-        set.def.hrm=set.def.slm;
-        set.def.dnd=1-set.def.slm;
-        if(set.def.slm) ACCEL.check(80);
-        else ACCEL.check(0);
+        if(set.def.slm) {HRS.log(5);set.def.hrm=1;set.def.acc=0;set.def.dnd=0;}
+        else {HRS.log(0);set.def.dnd=1;}
         digitalPulse(D16,1,[30,50,30]);
       }
     }else if(77<x&&x<157&&77<y&&y<159){//btn5
@@ -308,7 +301,7 @@ touchHandler[0]=function(e,x,y){
       if (face[0].cbri<1) face[0].cbri=1;
       g.bri.set(face[0].cbri);
    		digitalPulse(D16,1,[30,50,30]);
-    }else { 
+    }else {
 		  //set.updateSettings();
       if (face.faceSave!=-1) {
         face.go(face.faceSave[0],face.faceSave[1],face.faceSave[2]);face.faceSave=-1;
@@ -359,6 +352,8 @@ touchHandler[0]=function(e,x,y){
       set.def.hid=1-set.def.hid;
 		  set.upd();
       digitalPulse(D16,1,[30,50,30]);
+    }else if(77>x&&77<y&&y<159){//btn4
+      face.go("sleep",0);return;
     } else digitalPulse(D16,1,40);
   }
   this.timeout();

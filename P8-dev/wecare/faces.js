@@ -1,4 +1,4 @@
-//face
+//faces.js
 var face={
   appCurr:"main",
   appPrev:"main",
@@ -35,33 +35,34 @@ var face={
   },
   go:function(app,page,arg){
     this.appPrev=this.appCurr;
-	this.pagePrev=this.pageCurr;
+	  this.pagePrev=this.pageCurr;
     this.appCurr=app;
     this.pageCurr=page;
-	if (this.pagePrev==-1&&P8.awake) {g.clear();P8.sleep();}
+	  if (this.pagePrev==-1&&P8.awake) {g.clear();P8.sleep();}
     if (this.pagePrev!=-1) {
         face[this.pagePrev].clear();
     }
   	if (this.pageCurr==-1 && this.pagePrev!=-1) {
-		//if (set.def.touchtype=="716")tfk.loop=100;
-		//acc.go=0;
-        face[this.pagePrev].off();
+      face[this.pagePrev].off();
       if (this.offid>=0) {clearTimeout(this.offid); this.offid=-1;}
-	  if (this.appCurr!=this.appPrev) eval(require('Storage').read(app));
-		return;
-	}
-	if (this.appCurr!=this.appPrev) {
+	    if (this.appCurr!=this.appPrev) eval(require('Storage').read(app));
+		  return;
+	  }
+	  if (this.appCurr!=this.appPrev) {
       face[1]=0;face[2]=0;face[5]=0;
 	  this.appRoot=[this.appPrev,this.pagePrev,this.pageArg];
       eval(require('Storage').read(app));
     } 
-	this.off(page);
-	face[page].init(arg);	
-	//if(!P8.awake) {P8.wake();
-		//if (set.def.touchtype!="816") digitalPulse(D13,1,[10,50]);
-		//if (set.def.touchtype=="716"){tfk.loop=5;if( tfk.tid==-1) tfk.init();}
-	//}
-	face[page].show(arg);
-	if(arg) this.pageArg=arg;
+	  this.off(page);
+    brightness(0);
+    face[page].init(arg);
+    g.lcd_wake();
+    brightness(P8.BRIGHT);
+    //if(!P8.awake) {P8.wake();
+      //if (set.def.touchtype!="816") digitalPulse(D13,1,[10,50]);
+      //if (set.def.touchtype=="716"){tfk.loop=5;if( tfk.tid==-1) tfk.init();}
+    //}
+	  face[page].show(arg);
+	  if(arg) this.pageArg=arg;
   }
 };
