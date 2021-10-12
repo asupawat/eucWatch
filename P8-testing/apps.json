@@ -8,7 +8,8 @@
 		"type":"core",
 		"readme": "README.md",
 		"storage": [
-			{"name":".bootrst","url":"init.js"}
+			{"name":".bootrst","url":"init.js"},
+			{"name":"mqtt.js","url":"mqtt.js"}
 		]
 	},
 	{ "id": "handler",
