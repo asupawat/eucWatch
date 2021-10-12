@@ -208,7 +208,6 @@ if (BTN1.read() || Boolean(require("Storage").read("devmode"))) {
   require("Storage").erase("colmode16");
   eval(require('Storage').read('handler'));
   eval(require('Storage').read('main'));
-  eval(require('Storage').read('euc'));
   eval(require('Storage').read('mqtt.js'));
 
   digitalPulse(D16,1,[100,30,100]);
