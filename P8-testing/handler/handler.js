@@ -83,7 +83,6 @@ var set={
 		hid:0, //enable/disable Bluetooth music controll Service.
 		gb:0,  //Notifications service. Enables/disables support for "GadgetBridge" playstore app.
 		atc:0, //Notifications service. Enables/disables support for "d6 notification" playstore app from ATC1441.
-		emuZ:0, //emulator service. Enables/disables bridge support for euc world, wheelog, darknessbot emulating a z10 .
 		acc:0, //enables/disables wake-screen on wrist-turn. 
 		hidT:"media", //joy/kb/media
 		bri:2, //Screen brightness 1..7
@@ -98,33 +97,13 @@ var set={
 	clin:0,//not settable
 	upd:function(){ //run this for settings changes to take effect.
 	if (this.def.hid===1) {this.def.hid=0; return;}
-	if (this.def.emuZ){
-		this.def.cli=0;
-		this.def.gb=0;
-		this.def.hid=0;
-		eval(require('Storage').read('emuZ'));
-		// ninebotZ emu support
-		NRF.setServices({
-			0xfee7: {
-				0xfec8: {
-				},
-				0xfec7: {
-				},
-				0xfec9: {
-				}
-			}
-		}, { uart: true});
-	}else {
-		NRF.setServices(undefined,{uart:(this.def.cli||this.def.gb)?true:false,hid:(this.def.hid&&this.hidM)?this.hidM.report:undefined });
-		if (global.emuZ)  emuZ=0;
-		//if (this.atcW) {this.atcW=undefined;this.atcR=undefined;} 
-	}
+	NRF.setServices(undefined,{uart:(this.def.cli||this.def.gb)?true:false,hid:(this.def.hid&&this.hidM)?this.hidM.report:undefined });
 	if (this.def.gb) eval(require('Storage').read('m_gb'));
 	else {
 		this.gbSend=function(){return;};
 		this.handleNotificationEvent=0;this.handleFindEvent=0;handleWeatherEvent=0;handleCallEvent=0;handleFindEvent=0;sendBattery=0;global.GB=0;
 	}		
-	if (!this.def.cli&&!this.def.gb&&!this.def.emuZ&&!this.def.hid) { if (this.bt) NRF.disconnect(); else{ NRF.sleep();this.btsl=1;}}
+	if (!this.def.cli&&!this.def.gb&&!this.def.hid) { if (this.bt) NRF.disconnect(); else{ NRF.sleep();this.btsl=1;}}
 	else if (this.bt) NRF.disconnect();
 	else if (this.btsl==1) {NRF.restart();this.btsl=0;}
 	}
@@ -150,18 +129,13 @@ E.setTimeZone(set.def.timezone);
 //nrf
 //set.emuD=0;
 function ccon(l){ 
-	if (set.def.emuZ) {
-		//if (set.emuD) return;
-		emuZ.cmd(l);
-		return;
+	var cli="\x03";
+	var loa="\x04";
+	var gb="\x20\x03";
+	if (l.startsWith(loa)) {
+		Bluetooth.removeListener('data',ccon);E.setConsole(Bluetooth,{force:false});
+		return; 
 	}else {
-		var cli="\x03";
-		var loa="\x04";
-		var gb="\x20\x03";
-		 if (l.startsWith(loa)) {
-			Bluetooth.removeListener('data',ccon);E.setConsole(Bluetooth,{force:false});
-			return; 
-		}else {
 		if (set.def.cli) {
 			if (l.startsWith(cli)) {
 				set.bt=2;Bluetooth.removeListener('data',ccon);E.setConsole(Bluetooth,{force:false});
@@ -174,19 +148,18 @@ function ccon(l){
 			}
 		}
 		if (l.length>5)  NRF.disconnect();
-		}
 	}
 }
 function bcon() {
 	E.setConsole(null,{force:true});
 	set.bt=1; 
-	if (set.def.cli||set.def.gb||set.def.emuZ) { Bluetooth.on('data',ccon);}
+	if (set.def.cli||set.def.gb) { Bluetooth.on('data',ccon);}
 	setTimeout(()=>{if (set.bt==1) NRF.disconnect();},5000);
 }
 function bdis() {
     Bluetooth.removeListener('data',ccon);
 	E.setConsole(null,{force:true});
-    if (!set.def.cli&&!set.def.gb&&!set.def.emuZ&&!set.def.hid){
+    if (!set.def.cli&&!set.def.gb&&!set.def.hid){
 		NRF.sleep();
 		set.btsl=1;
     }	
