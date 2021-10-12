@@ -71,19 +71,6 @@
 			{"name":"notify","url":"notify.js"}
 		]
 	},
-	{ "id": "euc",
-		"name": "EUC modules support",
-		"icon": "icon.png",
-		"version":"0.95",
-		"description": "EUC module switcher, depends on wheel module.",
-		"tags": "euc",
-		"type": "euc",
-		"storage": [
-			{"name":"euc","url":"euc.js"},
-			{"name":"eucSlot.json","url":"eucSlot.json"},
-			{"name":"emuZ","url":"emuZ.js"}
-		]
-	},
 	{ "id": "Font7x11Numeric7Seg",
 		"name": "Fonts-Font7x11Numeric7Seg",
 		"icon": "icon.png",
