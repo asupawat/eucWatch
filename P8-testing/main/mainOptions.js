@@ -32,12 +32,6 @@ face[0] = {
 			print(2);
 			this.info();
 		}
-		
-		//if (euc.state!=="READY"&&face.appPrev!=="dashGarage") {face.go(set.dash[set.def.dash.face],0);return;}
-       // this.tid=setTimeout(function(t,o){
-		//  t.tid=-1;
-		//  t.show();
-       // },1000,this);
 	},
     btn: function(bt,txt1,size1,x1,y1,clr1,clr0,rx1,ry1,rx2,ry2,txt2,size2,x2,y2){
 			this.g.setColor(0,(bt)?clr1:clr0);
