@@ -67,7 +67,6 @@ face[0] = {
 		}else if(this.btSet){
 			if(this.btSetOn){
 				this.btSetOn=0;
-				//this.g.setColor(1,(set.def.cli||set.def.gb||set.def.emuZ||set.def.hid)?col("raf"):col("dgray"));
 				this.g.setColor(1,col("dgray"));
 				this.g.fillRect(0,0,155,75);
 				this.g.setColor(0,col("white"));
@@ -129,7 +128,7 @@ face[0] = {
 			//acc on/off
 			if (set.def.acc!=this.acc) {
 				this.acc=set.def.acc;
-				this.btn(this.acc,80,80,155,155,require("heatshrink").decompress(atob("mEwwJC/AAkPwAECgP//AFCg///4FCj4FBCQU/AoPgAoN/4Ef+AFB/wZBDwMB/gCCgUDBwV+h0HDQU/jkP4AsCvg/Dh/8j5JDAokH/k+Igf4Aoc//E8AoRbBvhhEAoUD//wjAnBwIFBEIRaEn/AgIFDJ4QFIKoQdDAoibDgECbfA=")),95,94,col("lblue"),col("raf"),col("lblue"),(euc.state=="READY")?col("raf"):col("gray"));
+				this.btn(this.acc,80,80,155,155,require("heatshrink").decompress(atob("mEwwJC/AAkPwAECgP//AFCg///4FCj4FBCQU/AoPgAoN/4Ef+AFB/wZBDwMB/gCCgUDBwV+h0HDQU/jkP4AsCvg/Dh/8j5JDAokH/k+Igf4Aoc//E8AoRbBvhhEAoUD//wjAnBwIFBEIRaEn/AgIFDJ4QFIKoQdDAoibDgECbfA=")),95,94,col("lblue"),col("raf"),col("lblue"),col("gray"));
 			}
 			//brightness level
 			if (this.g.bri.lv!=this.bri) {
@@ -305,7 +304,6 @@ touchHandler[0]=function(e,x,y){
 			}else {
 				face[0].themeSetOn=1;face[0].themeSet=1;buzzer(D16,1,[30,50,30]);
 				face[0].gb=-1;face[0].cli=-1;face[0].bt=-1;face[0].hid=-1;face[0].emuZ=-1;face[0].bri=-1;face[0].acc=-1;face[0].buzz=-1;face[0].sys=1;face[0].btn2=1;face[0].fmp=-1;
-				//face[0].bri=-1;face[0].acc=-1;face[0].buzz=-1;face[0].sys=1;face[0].btn2=1;face[0].fmp=-1;
 			}
 		}else if(158<x&&x<239&&y<75){//btn3
 			if (face.mode) {if (face[0].appDo3) {buzzer(D16,1,[30,50,30]);eval(face[0].appDo3);return;} else buzzer(D16,1,40);
@@ -398,9 +396,6 @@ touchHandler[0]=function(e,x,y){
 			face.go("alarm",0);return;
 		} else buzzer(D16,1,40);
 	}else if  (e==1){
-		//if (face[0].btSet) {
-		//	face[0].btSet=0;
-		//}else 
 		if(158<x&&x<239&&60<y&&y<180&&!face.mode) {
 			face[0].cbri=w.gfx.bri.lv-1;
 			if (face[0].cbri<1) face[0].cbri=1;
@@ -470,8 +465,6 @@ touchHandler[0]=function(e,x,y){
 			w.gfx.fillRect(156,0,159,160);
 			w.gfx.flip();
 			face[0].themeSet=0;
-		//}else if (face.faceSave!=-1) {
-		//	face.go(face.faceSave[0],face.faceSave[1],face.faceSave[2]);face.faceSave=-1;
 		}else if (Boolean(require('Storage').read('w_apps'))){
 			face.mode=1-face.mode;
 			face[0].btSet=0;
@@ -479,22 +472,7 @@ touchHandler[0]=function(e,x,y){
 			buzzer(D16,1,[30,50,30]);
 		}else{
 			buzzer(D16,1,40);
-			//if (face.appPrev=="settings") {face.appPrev="main";face.pagePrev=0;}
-			//face.go(face.appPrev,face.pagePrev,face.pageArg);return;
 		}
-		/*	
-		  if (face[0].btSet) {
-			face[0].btSet=0;
-			face[0].gb=-1;face[0].cli=-1;face[0].bt=-1;face[0].hid=-1;face[0].emuZ=-1;face[0].bri=-1;face[0].acc=-1;face[0].buzz=-1;face[0].sys=1;face[0].btn2=1;face[0].fmp=-1;
-		  }else if (face.faceSave!=-1) {
-			  face.go(face.faceSave[0],face.faceSave[1],face.faceSave[2]);face.faceSave=-1;
-			  //set.updateSettings();
-		  }else{
-			  if (face.appPrev=="settings") {face.appPrev="main";face.pagePrev=0;}
-			  face.go(face.appPrev,face.pagePrev,face.pageArg);return;
-			  //set.updateSettings();
-		  }
-		  */
 	}else if  (e==12){
 		if (face[0].btSet) {
 			if(x<160&&y<77){//bt toggle tx
