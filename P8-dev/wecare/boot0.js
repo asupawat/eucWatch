@@ -2,7 +2,7 @@
 E.kickWatchdog();
 function P8KickWd(){
 	"ram";
-  if(!D17.read())E.kickWatchdog();
+  if(!BTN1.read())E.kickWatchdog();
 }
 var wdint=setInterval(P8KickWd,4000);
 E.enableWatchdog(20, false);
@@ -123,7 +123,7 @@ setWatch(()=>{
     P8.emit("power",D19.read());
 },D19,{repeat:true,debounce:500});
 
-setWatch(() =>{P8.pressedtime = Date.now();},D17,{repeat:true,edge:"rising"});
+setWatch(() =>{P8.pressedtime = Date.now();},BTN1,{repeat:true,edge:"rising"});
 //fonts
 //require('Font7x11Numeric7Seg').add(Graphics);
 P8.init();
@@ -135,7 +135,7 @@ eval(STOR.read("touch.js"));
 TC.start();
 //TC.on('touch',(p)=>{P8.time_left=P8.ON_TIME;});
 //TC.on('swipe',(d)=>{P8.time_left=P8.ON_TIME;});
-//TC.on("longtouch", (p)=> {P8.time_left=P8.ON_TIME;if (D17.read()) reset(); else face.go("main",0); }); //load("launch.js");
+//TC.on("longtouch", (p)=> {P8.time_left=P8.ON_TIME;if (BTN1.read()) reset(); else face.go("main",0); }); //load("launch.js");
 
 eval(STOR.read("mqtt.js"));
 eval(STOR.read("setter.js"));
@@ -196,7 +196,7 @@ P8.ticker = setInterval(P8.tick,1000);
 setWatch(() =>{
 	if ((Date.now()-P8.pressedtime)>30000) E.reboot();
   else if ((Date.now()-P8.pressedtime)>5000) reset();
-},D17,{repeat:true,edge:"falling"});
+},BTN1,{repeat:true,edge:"falling"});
 setWatch(function(e) {
   if (!P8.awake) P8.wake();
   else {
@@ -207,7 +207,7 @@ setWatch(function(e) {
       mqtt.publish("call", "1");
     }
   }
-}, D17, { repeat: true, edge: 'rising', debounce: 50 });
+}, BTN1, { repeat: true, edge: 'rising', debounce: 50 });
 }
 
 eval(STOR.read("events.js"));
