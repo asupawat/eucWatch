@@ -204,7 +204,7 @@ setWatch(function(e) {
     else {
       digitalPulse(D16,1,[80,100,40]);
       handleMqttEvent({"src":"SOS","title":"CALLING","body":"FOR HELP"});
-      mqtt.publish("call", "help");
+      mqtt.publish("call", "1");
     }
   }
 }, D17, { repeat: true, edge: 'rising', debounce: 50 });
