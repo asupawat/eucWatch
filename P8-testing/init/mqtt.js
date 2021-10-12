@@ -119,6 +119,7 @@ init_mqtt();
 // Answer call/help
 mqtt.on("call", function(msg){
   //P8.wake("call",msg.message);
+  face.go('main', 0);
 });
 
 // ===============================================
