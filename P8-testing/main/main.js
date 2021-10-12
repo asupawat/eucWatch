@@ -55,7 +55,7 @@ face[0] = {
 			this.g.fillRect(0,0,158,50); //date
 			this.g.setColor(1,col("lblue"));
 			this.g.setFont("Vector",35);
-			if (this.bt==0&&!set.def.cli&&!set.def.emuZ&&!set.def.hid&&!set.def.gb) {
+			if (this.bt==0&&!set.def.cli&&!set.def.hid&&!set.def.gb) {
 				this.g.drawString(this.d[2]+" "+this.d[0].toUpperCase(), (81-(this.g.stringWidth(this.d[2]+" "+this.d[0].toUpperCase()))/2) ,9); //date
 				this.g.flip();
 			}else {
@@ -181,32 +181,27 @@ face[0] = {
 				this.mac=(this.mac)?this.mac:set.read("dash","slot"+set.read("dash","slot")+"Mac");
 				if(!this.mac) {
 						this.g.setFont("Vector",25);
-						this.g.drawString("eucWatch",119-(this.g.stringWidth("eucWatch")/2),170); 
+						this.g.drawString("weCare",119-(this.g.stringWidth("weCare")/2),170); 
 						this.g.setFont("Vector",20);
 						this.g.drawString("Hold side Btn to Scan",119-(this.g.stringWidth("Hold side Btn to Scan")/2),215); 
 						this.g.flip();
 				}else {
 					this.g.setFont("Vector",35);
-					//this.g.drawString(euc.dash.maker,119-(this.g.stringWidth(euc.dash.maker)/2),170)); 
 					this.g.drawString(set.def.name,119-(this.g.stringWidth(set.def.name)/2),155);
 					this.g.setFont("Vector",30);
-					if (euc.state !== "OFF") {
-						this.g.drawString(euc.state,119-(this.g.stringWidth(euc.state)/2),215); //
-					} else 	{
-						this.tot=0;
-						require('Storage').list("logYearSlot").forEach(logfile=>{
-							this.log=require("Storage").readJSON(logfile,1);
-							for (var key in this.log) {
-								this.tot += this.log[key];
-							}
-						});
-						if (set.def.dash.tot) this.tot += Number(set.def.dash.tot);
-						this.tot=Math.round(this.tot);
-						if (3<this.tot.toString().length) 
+					this.tot=0;
+					require('Storage').list("logYearSlot").forEach(logfile=>{
+						this.log=require("Storage").readJSON(logfile,1);
+						for (var key in this.log) {
+							this.tot += this.log[key];
+						}
+					});
+					if (set.def.dash.tot) this.tot += Number(set.def.dash.tot);
+					this.tot=Math.round(this.tot);
+					if (3<this.tot.toString().length) 
                 this.tot=this.tot.toString().substring(0,this.tot.toString().length-3)+","+this.tot.toString().substring(this.tot.toString().length-3, this.tot.toString().length);
-						this.g.setFont("Vector",40);
-						this.g.drawString(this.tot+" "+((set.def.dash.mph)?"mi":"Km"),119-(this.g.stringWidth(this.tot+" "+((set.def.dash.mph)?"mi":"Km"))/2),200); 
-					}
+					this.g.setFont("Vector",40);
+					this.g.drawString(this.tot+" "+((set.def.dash.mph)?"mi":"Km"),119-(this.g.stringWidth(this.tot+" "+((set.def.dash.mph)?"mi":"Km"))/2),200); 
 					this.g.flip();
 				}
 			}
@@ -282,11 +277,7 @@ face[1] = {
 		return true;
 	},
 	show : function(){
-		if (Boolean(require("Storage").read(set.dash[set.def.dash.face]))) {
-			(euc.state=="OFF")?face.go("dashOff",0):face.go(set.dash[set.def.dash.face],0);
-			return;
-		}
-		else if (Boolean(require("Storage").read("alarm"))) {face.go("alarm",0);}  
+		if (Boolean(require("Storage").read("alarm"))) {face.go("alarm",0);}  
 		return true;
 	},
 	clear: function(){
@@ -337,11 +328,7 @@ touchHandler[0]=function(e,x,y){
 		if (Boolean(require("Storage").read("settings"))) {face.go("settings",0);return;}
 	  //} else buzzer(D16,1,40);
     }else if  (e==3){
-		if (Boolean(require("Storage").read(set.dash[set.def.dash.face]))) {
-			(euc.state=="OFF")?face.go("dashOff",0):face.go(set.dash[set.def.dash.face],0);
-			//face.go(set.dash[set.def.dash.face],0);
-			return;
-		}else if (Boolean(require("Storage").read("alarm"))) {face.go("alarm",0);return;}
+		if (Boolean(require("Storage").read("alarm"))) {face.go("alarm",0);return;}
     }else if  (e==4){
 		if (Boolean(require("Storage").read("notify"))) {face.go("notify",0);return;}
 		else buzzer(D16,1,40);
