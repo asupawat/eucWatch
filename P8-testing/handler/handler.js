@@ -73,7 +73,7 @@ var set={
 		},
 		off:{ //face timeout 
 		},
-		name:"eucWatch", //Set the name to be broadcasted by the Bluetooth module. 
+		name:"weCare", //Set the name to be broadcasted by the Bluetooth module. 
 		timezone:0, //Timezone
 		hr24:1, //24 hour mode
 		woe:1, //wake Screen on event.0=disable|1=enable
@@ -290,19 +290,14 @@ function buttonHandler(s){
 	if (face.offid) {clearTimeout(face.offid);face.offid=0;}
 	if (s.state) { 
 		this.press=true;
-		if (global.euc&&euc.state=="READY"&&2<=euc.dash.spd&&euc.dash.horn) {euc.wri("hornOn");return;}
 		this.t1=setTimeout(() => {
 			this.t1=0;
-			if (global.euc) {
-				euc.tgl();this.press=false;
-			}
 		}, 1000);
    }else if (this.press && !s.state)  { 
 		this.press=false;
-		if (global.euc&&euc.state=="READY"&&euc.horn&&euc.dash.horn) {euc.wri("hornOff");return;}
 		if (face.pageCurr==-1) {
 			buzzer(D16,1,[60,40,60]);
-			face.go((global.euc&&euc.state!="OFF")?set.dash[set.def.dash.face]:face.appCurr,0);
+			face.go(face.appCurr,0);
 		}else { 
 			if (face.appCurr=="main"&&face.pagePrev!=-1&&face.pagePrev!=2) {
 				face.go("main",-1);
@@ -313,7 +308,6 @@ function buttonHandler(s){
 				face.go(face.appCurr,to);
 			}
 		}
-	}else if (this.press&&global.euc&&euc.state==="READY"&&euc.horn&&euc.dash.horn) {euc.wri("hornOff");return;
 	}else face.off();
 }
 btn=setWatch(buttonHandler,BTN1, {repeat:true, debounce:10,edge:0});
@@ -533,18 +527,13 @@ if (set.def.acctype==="BMA421"){
 			if (230<data[3]&&data[3]<this.yedge) {
 				if (data[1]<this.xedge||data[1]>=220) {
 					if (!this.up&&!w.gfx.isOn&&face.appCurr!=""){  
-							if  (global.euc) {
-								if (global.euc&&euc.state!="OFF") face.go(set.dash[set.def.dash.face],0);
-								else{if (face.appCurr=="main") face.go("main",0);else face.go(face.appCurr,0);}
-							}else{ 
-								if (face.appCurr=="main") face.go("main",0);
-								else face.go(face.appCurr,0);
-							}
-							this.loop=500;
+						if (face.appCurr=="main") face.go("main",0);
+						else face.go(face.appCurr,0);
+						this.loop=500;
 					}else if (w.gfx.isOn&&face.pageCurr!=-1) {
 						if (set.tor==1)w.gfx.bri.set(face[0].cbri); 
 						else if ( !set.def.off[face.appCurr] || ( set.def.off[face.appCurr] &&  set.def.off[face.appCurr] <= 60000))
-							face.off(1500);		
+						face.off(1500);		
 						this.loop=200;
 					} 
 					this.up=1;
@@ -647,49 +636,10 @@ cron={
 		//min: ()=>{setTimeout(() =>{ cron.emit('min',Date().getMinutes());cron.event.min();},(Date(Date().getFullYear(),Date().getMonth(),Date().getDate(),Date().getHours(),Date().getMinutes()+1)-Date()));},
 		//sec:()=>{setTimeout(() =>{ cron.emit('sec',Date().getSeconds());cron.event.sec();},(Date(Date().getFullYear(),Date().getMonth(),Date().getDate(),Date().getHours(),Date().getMinutes(),Date().getSeconds()+1)-Date()));},
 	},
-	task:{
-		euc:{
-			hour:x=>{
-				if (!Date().getHours()) {
-					cron.emit('day',Date().getDay());
-					if (Date().getDate()==1) cron.emit('month',Date().getMonth());
-				}
-				let pr=(!x)?23:x-1;
-				if (euc.log.trp[0]) {
-					let v=set.read("logDaySlot"+set.def.dash.slot,pr);
-					set.write("logDaySlot"+set.def.dash.slot,pr,((euc.log.trp[0])?euc.dash.trpT-euc.log.trp[0]:0)+((v)?v:0));
-				}
-				require('Storage').list("logDaySlot").forEach(logfile=>{set.write(logfile.split(".")[0],x);});
-				euc.log.trp[0]=0;
-			},
-			day:x=>{
-				let pr=(!x)?6:x-1;
-				if (euc.log.trp[1]) {
-					let v=set.read("logWeekSlot"+set.def.dash.slot,pr);
-					set.write("logWeekSlot"+set.def.dash.slot,pr,((euc.log.trp[1])?euc.dash.trpT-euc.log.trp[1]:0)+((v)?v:0));
-				}
-				require('Storage').list("logWeekSlot").forEach(logfile=>{set.write(logfile.split(".")[0],x);});
-				euc.log.trp[1]=0;
-			},
-			month:x=>{
-				let pr=(!x)?11:x-1;
-				if (euc.log.trp[2]) {
-					let v=set.read("logYearSlot"+set.def.dash.slot,pr);
-					set.write("logYearSlot"+set.def.dash.slot,pr,((euc.log.trp[2])?euc.dash.trpT-euc.log.trp[2]:0)+((v)?v:0));
-				}
-				require('Storage').list("logYearSlot").forEach(logfile=>{set.write(logfile.split(".")[0],x);});
-				euc.log.trp[2]=0;
-			}
-		}
-	}
 };
 
 
 cron.event.hour();
-cron.on('hour',cron.task.euc.hour);
-cron.on('day',cron.task.euc.day);
-cron.on('month',cron.task.euc.month);
-
 
 //themes -todo
 if (!Boolean(require("Storage").read("colmode16"))){
