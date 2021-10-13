@@ -81,5 +81,15 @@
 			"storage": [
 		{"name":"Font7x11Numeric7Seg","url":"Font7x11Numeric7Seg.js"}
 		]
+	},
+	{ "id": "call",
+		"name": "Call",
+		"icon": "icon.png",
+		"version":"0.01",
+		"description": "Call help!",
+		"tags": "apps",
+		"storage": [
+			{"name":"call","url":"call.js"}
+		]
 	}
 ]
