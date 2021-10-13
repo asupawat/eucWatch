@@ -242,11 +242,10 @@ touchHandler[0]=function(e,x,y){
 		face.go("settings",0);return;
 	  } 
     }else if  (e==3){
-		//buzzer(D16,1,40);
-		face.go("main",0);return;
+		face.go("call",0);return;
     }else if  (e==4){
-		if (face.appPrev=="main")buzzer(D16,1,40);
-		else face.go("main",0);return;
+		  if (face.appPrev=="main")buzzer(D16,1,40);
+		  else face.go("main",0);return;
     }else if  (e==12){
       if (y<80&&x<170){
 		buzzer(D16,1,[30,50,80]);notify.call=[];notify.nCall=0;face[0].nCall=-1;
