@@ -15,13 +15,18 @@ face[0] = { //the first face of the call app, called by using `face.go("call",0)
     this.g.fillRect(0,0,239,35); 
     this.g.setColor(1,col("lblue"));
     this.g.setFont("Vector",25);
-    if(o=="undefined" && global.inp=="undefined") {
+    if(o=="0") {
+      o="undefined";
+      digitalPulse(D16,1,[80,100,40]);
+      face.go("main",0);
+    } else if(o=="undefined" && global.inp=="undefined") {
       this.g.drawString("CALL NURSE",40,6);
       this.g.flip();
       this.g.setColor(0,col("black"));
       this.g.setColor(1,0xF00);
       this.g.drawImage(require("Storage").read("call.img"),30,55);
     } else if(o=="1" || (global.inp=="1" && o=="undefined")) {
+      this.offms=3000;
       if(o=="1") digitalPulse(D16,1,[80,100,40]); //send double buzz pulse
       if(o=="undefined") o=global.inp;
       this.g.drawString("CALLING NURSE",15,6);
@@ -32,10 +37,13 @@ face[0] = { //the first face of the call app, called by using `face.go("call",0)
     } else {
       //clear calling loop
       if (global.calling) {clearInterval(global.calling);global.calling=0;}
-      if(o=="undefined") o=global.inp;
-      else {
+      this.offms=8000;
+      if(o=="undefined") {
+        o=global.inp;
+      } else {
         digitalPulse(D16,1,[200,300,100,100,100]);
         handleMqttEvent({"src":"NURSE","title":o,"body":"IS COMING"});
+        mqtt.publish("call", "3");
       }
       this.g.setFont("Vector",22);
       this.g.drawString("NURSE IS COMING",120-(this.g.stringWidth("NURSE IS COMING")/2),9);
@@ -51,7 +59,7 @@ face[0] = { //the first face of the call app, called by using `face.go("call",0)
       this.g.setFont("Vector",50);
       this.g.drawString("OK",120-(this.g.stringWidth("OK")/2),135);
       this.g.flip();
-    } 
+    }
     this.g.flip();
     global.inp=o;
     this.btn=0;
@@ -127,20 +135,18 @@ touchHandler[0]=function(e,x,y){
     if(global.inp!="undefined" && global.inp!="1") {
       handleMqttEvent({"src":"NURSE","title":global.inp,"body":"TAKE ACTION"});
       print("Accepted!");
-      global.inp="undefined";
-      digitalPulse(D16,1,[80,100,40]);
-      //mqtt.publish("call", "0");
-      face.go("main",0);
+      mqtt.publish("call", "0");
       return true;
     } else if(face[0].o=="undefined" && global.inp=="undefined") {
+      face[0].offms=3000;
       print("Calling!");
       digitalPulse(D16,1,[80,100,40]);
       handleMqttEvent({"src":"PATIENT","title":"CALLING","body":"FOR HELP"});
-      //mqtt.publish("call", "1");
+      mqtt.publish("call", "1");
       if (global.calling) {clearInterval(global.calling);global.calling=0;}
       global.calling=setInterval(()=>{
         print("Re-Calling!");
-        //mqtt.publish("call", "2");
+        mqtt.publish("call", "2");
 			},300000); //300000=5min
       break;
     }
@@ -150,3 +156,5 @@ touchHandler[0]=function(e,x,y){
     this.timeout();
   }
 };
+
+
