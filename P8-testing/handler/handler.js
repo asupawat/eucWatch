@@ -1,3 +1,4 @@
+Modules.addCached("Font7x11Numeric7Seg",function(){exports.add=function(a){a.prototype.setFont7x11Numeric7Seg=function(){this.setFontCustom(atob("AAAAAAAAAAAAAAEAAAAQAgBACAAAAHvQBgDAGAL3gAAAAAAAAAAHvAAA9CGEMIYQvAAAACEMIYQwhe8AB4AIAQAgBA94ADwIQwhhDCEDwAHvQhhDCGEIHgAAAgBACAEAHvAAe9CGEMIYQveAA8CEMIYQwhe8AAABjDGAAAA96EEIIQQge8AB7wIQQghBCB4AD3oAwBgDAEAAAAPAhBCCEEL3gAPehDCGEMIQAAAe9CCEEIIQAAAAAAAA"),32,atob("BwAAAAAAAAAAAAAAAAcCAAcHBwcHBwcHBwcFAAAAAAAABwcHBwcH"),11)}}});
 //handler
 //fonts
 require('Font7x11Numeric7Seg').add(Graphics);
@@ -23,6 +24,13 @@ function handleInfoEvent(event) {
 			face.appPrev="main";face.pagePrev=-1;
         }
 	}
+}
+function handleMqttEvent(event) {
+	notify.nInfo++;
+	notify.New++;
+	let d=(Date()).toString().split(' ');
+    let ti=(""+d[4]+" "+d[0]+" "+d[2]);
+	notify.info.unshift("{\"src\":\""+event.src+"\",\"title\":\""+event.title+"\",\"body\":\""+event.body+"\",\"time\":\""+ti+"\"}");
 }
 //settings - run set.upd() after changing BT settings to take effect.
 var set={
@@ -102,7 +110,7 @@ var set={
 	else {
 		this.gbSend=function(){return;};
 		this.handleNotificationEvent=0;this.handleFindEvent=0;handleWeatherEvent=0;handleCallEvent=0;handleFindEvent=0;sendBattery=0;global.GB=0;
-	}		
+	}
 	if (!this.def.cli&&!this.def.gb&&!this.def.hid) { if (this.bt) NRF.disconnect(); else{ NRF.sleep();this.btsl=1;}}
 	else if (this.bt) NRF.disconnect();
 	else if (this.btsl==1) {NRF.restart();this.btsl=0;}
@@ -128,7 +136,7 @@ if (!Boolean(require("Storage").read("dash.json"))) {
 E.setTimeZone(set.def.timezone);
 //nrf
 //set.emuD=0;
-function ccon(l){ 
+function ccon(l){
 	var cli="\x03";
 	var loa="\x04";
 	var gb="\x20\x03";
@@ -163,17 +171,16 @@ function bdis() {
 		NRF.sleep();
 		set.btsl=1;
     }	
-	if (set.bt==1) handleInfoEvent({"src":"BT","title":"BT","body":"Disconnected"});
-	else if (set.bt==2) handleInfoEvent({"src":"BT","title":"IDE","body":"Disconnected"});
-	else if (set.bt==3) handleInfoEvent({"src":"BT","title":"GB","body":"Disconnected"});
-	//else if (set.bt==4) handleInfoEvent({"src":"BT","title":"ATC","body":"Disconnected"});
-	else if (set.bt==4) handleInfoEvent({"src":"BT","title":"BRIDGE","body":"Disconnected"});
-	else if (set.bt==5) handleInfoEvent({"src":"BT","title":"ESP","body":"Disconnected"});
+	//if (set.bt==1) handleInfoEvent({"src":"BT","title":"BT","body":"Disconnected"});
+	//else if (set.bt==2) handleInfoEvent({"src":"BT","title":"IDE","body":"Disconnected"});
+	//else if (set.bt==3) handleInfoEvent({"src":"BT","title":"GB","body":"Disconnected"});
+	//else if (set.bt==4) handleInfoEvent({"src":"BT","title":"BRIDGE","body":"Disconnected"});
+	//else if (set.bt==5) handleInfoEvent({"src":"BT","title":"ESP","body":"Disconnected"});
   	set.bt=0; 
 	set.emuD=0;
 }
 NRF.setTxPower(set.def.rfTX);
-NRF.on('disconnect',bdis);  
+NRF.on('disconnect',bdis);
 NRF.on('connect',bcon);
 NRF.setAdvertising({}, { name:set.def.name,connectable:true });
 set.upd();
