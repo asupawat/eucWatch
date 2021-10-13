@@ -328,9 +328,9 @@ touchHandler[0]=function(e,x,y){
 		if (Boolean(require("Storage").read("settings"))) {face.go("settings",0);return;}
 	  //} else buzzer(D16,1,40);
     }else if  (e==3){
-		if (Boolean(require("Storage").read("alarm"))) {face.go("alarm",0);return;}
+		if (Boolean(require("Storage").read("heart"))) {face.go("heart",0);return;}
     }else if  (e==4){
-		if (Boolean(require("Storage").read("notify"))) {face.go("notify",0);return;}
+		if (Boolean(require("Storage").read("call"))) {face.go("call",0);return;}
 		else buzzer(D16,1,40);
     }else if  (e==12){
 	if (150<y&&y<200){ 	
