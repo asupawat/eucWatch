@@ -89,7 +89,9 @@
 		"description": "Call help!",
 		"tags": "apps",
 		"storage": [
-			{"name":"call","url":"call.js"}
+			{"name":"call","url":"call.js"},
+			{"name":"call.img","url":"call.img"},
+			{"name":"nurse.img","url":"nurse.img"}
 		]
 	}
 ]
