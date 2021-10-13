@@ -38,26 +38,30 @@ face[0] = { //the first face of the call app, called by using `face.go("call",0)
       //clear calling loop
       if (global.calling) {clearInterval(global.calling);global.calling=0;}
       this.offms=8000;
-      if(o=="undefined") {
-        o=global.inp;
-      } else {
-        digitalPulse(D16,1,[200,300,100,100,100]);
-        handleMqttEvent({"src":"NURSE","title":o,"body":"IS COMING"});
-        mqtt.publish("call", "3");
-      }
       this.g.setFont("Vector",22);
       this.g.drawString("NURSE IS COMING",120-(this.g.stringWidth("NURSE IS COMING")/2),9);
       this.g.flip();
       this.g.setColor(0,col("black"));
       this.g.setColor(1,col("white"));
       this.g.setFont("Vector",25);
-      this.g.drawString(o,120-(this.g.stringWidth(o)/2),55);
-      this.g.flip();
-      this.g.setColor(1,0x0F0);
-      this.g.fillRect(30,110,210,200);
-      this.g.setColor(0,col("black"));
-      this.g.setFont("Vector",50);
-      this.g.drawString("OK",120-(this.g.stringWidth("OK")/2),135);
+      if(o=="undefined") {
+        o=global.inp;
+        this.g.drawString(o,120-(this.g.stringWidth(o)/2),55);
+        this.g.flip();
+        this.g.setColor(1,0x0F0);
+        this.g.fillRect(30,110,210,200);
+        this.g.setColor(0,col("black"));
+        this.g.setFont("Vector",50);
+        this.g.drawString("OK",120-(this.g.stringWidth("OK")/2),135);
+      } else {
+        this.g.drawString(o,120-(this.g.stringWidth(o)/2),55);
+        this.g.flip();
+        digitalPulse(D16,1,[200,300,100,100,100]);
+        handleMqttEvent({"src":"NURSE","title":o,"body":"IS COMING"});
+        mqtt.publish("call", "3");
+        this.g.setColor(1,col("white"));
+        this.g.drawImage(require("Storage").read("nurse.img"),50,80,{scale:1.5});
+      }
       this.g.flip();
     }
     this.g.flip();
