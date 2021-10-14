@@ -1,4 +1,3 @@
-Modules.addCached("Font7x11Numeric7Seg",function(){exports.add=function(a){a.prototype.setFont7x11Numeric7Seg=function(){this.setFontCustom(atob("AAAAAAAAAAAAAAEAAAAQAgBACAAAAHvQBgDAGAL3gAAAAAAAAAAHvAAA9CGEMIYQvAAAACEMIYQwhe8AB4AIAQAgBA94ADwIQwhhDCEDwAHvQhhDCGEIHgAAAgBACAEAHvAAe9CGEMIYQveAA8CEMIYQwhe8AAABjDGAAAA96EEIIQQge8AB7wIQQghBCB4AD3oAwBgDAEAAAAPAhBCCEEL3gAPehDCGEMIQAAAe9CCEEIIQAAAAAAAA"),32,atob("BwAAAAAAAAAAAAAAAAcCAAcHBwcHBwcHBwcFAAAAAAAABwcHBwcH"),11)}}});
 //handler
 //fonts
 require('Font7x11Numeric7Seg').add(Graphics);
@@ -32,6 +31,14 @@ function handleMqttEvent(event) {
     let ti=(""+d[4]+" "+d[0]+" "+d[2]);
 	notify.info.unshift("{\"src\":\""+event.src+"\",\"title\":\""+event.title+"\",\"body\":\""+event.body+"\",\"time\":\""+ti+"\"}");
 }
+var valdef={
+  hrm:[],
+  sleep:[300,340,280,370],
+  awake:[36,32,38,27],
+  lastbpm:[],
+  sleeptime:[21,30,6,30]
+};
+valdef = require('Storage').readJSON('valuedef.json', 1);
 //settings - run set.upd() after changing BT settings to take effect.
 var set={
 	bt:0, //Incomming BT service status indicator- Not user settable.0=not_connected|1=unknown|2=webide|3=gadgetbridge|4=eucemu|5=esp32
