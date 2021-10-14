@@ -1,3 +1,4 @@
+Modules.addCached("Font7x11Numeric7Seg",function(){exports.add=function(a){a.prototype.setFont7x11Numeric7Seg=function(){this.setFontCustom(atob("AAAAAAAAAAAAAAEAAAAQAgBACAAAAHvQBgDAGAL3gAAAAAAAAAAHvAAA9CGEMIYQvAAAACEMIYQwhe8AB4AIAQAgBA94ADwIQwhhDCEDwAHvQhhDCGEIHgAAAgBACAEAHvAAe9CGEMIYQveAA8CEMIYQwhe8AAABjDGAAAA96EEIIQQge8AB7wIQQghBCB4AD3oAwBgDAEAAAAPAhBCCEEL3gAPehDCGEMIQAAAe9CCEEIIQAAAAAAAA"),32,atob("BwAAAAAAAAAAAAAAAAcCAAcHBwcHBwcHBwcFAAAAAAAABwcHBwcH"),11)}}});
 //handler
 //fonts
 require('Font7x11Numeric7Seg').add(Graphics);
@@ -525,14 +526,14 @@ if (set.def.acctype==="BMA421"){
     nmove:0,
     ess_values:[],
     ess_stddev:[],
-    process_run:() => {return this.process;},
+    process_run:() => {return acc.process>0;},
     check:(t)=>{
-      if (this.process) {
-        clearInterval(this.process);
-        this.process=0;
+      if (acc.process) {
+        clearInterval(acc.process);
+        acc.process=0;
       }
       if(t>=80) { // 12.5 Hz - min
-        this.process=setInterval(()=>{
+        acc.process=setInterval(()=>{
           var val=acc.read();
           acc.emit("accel");
         },t);
@@ -625,28 +626,28 @@ if (set.def.acctype==="BMA421"){
     nmove:0,
     ess_values:[],
     ess_stddev:[],
-    process_run:() => {return this.process;},
+    process_run:() => {return acc.process>0;},
     check:(t)=>{
-      if (this.process) {
-        clearInterval(this.process);
-        this.process=0;
+      if (acc.process) {
+        clearInterval(acc.process);
+        acc.process=0;
       }
       if(t>=80) { // 12.5 Hz - min
-        this.process=setInterval(()=>{
+        acc.process=setInterval(()=>{
           var val=acc.read();
           acc.emit("accel");
         },t);
       }
     },
 		enable:function(v){
-			i2c.writeTo(0x18,0x20,0x4f); //CTRL_REG1 20h ODR3 ODR2 ODR1 ODR0 LPen Zen Yen Xen , 50hz, lpen1. zyx
+			i2c.writeTo(0x18,0x20,0x47); //CTRL_REG1 20h ODR3 ODR2 ODR1 ODR0 LPen Zen Yen Xen , 50hz, lpen1. zyx
 			i2c.writeTo(0x18,0x21,0x00); //highpass filter disabled
 			i2c.writeTo(0x18,0x22,0x40); //ia1 interrupt to INT1
-			i2c.writeTo(0x18,0x23,0x80); //1000 BDU,MSB at high addr, 1000 HR low
+			i2c.writeTo(0x18,0x23,0x88); //1000 BDU,MSB at high addr, 1000 HR low
 			i2c.writeTo(0x18,0x24,0x00); // latched interrupt off
 			i2c.writeTo(0x18,0x25,0x00); //no Interrupt2 , no int polatiry
-			i2c.writeTo(0x18,0x32,5); //int1_ths-threshold = 250 milli g's
-			i2c.writeTo(0x18,0x33,15); //duration = 1 * 20ms
+			i2c.writeTo(0x18,0x32,0x10); //int1_ths-threshold = 250 milli g's
+			i2c.writeTo(0x18,0x33,0x01); //duration = 1 * 20ms
 			i2c.writeTo(0x18,0x30,0x02); //int1 to xh
 			this.init(v);
 		},
@@ -680,8 +681,6 @@ if (set.def.acctype==="BMA421"){
 				},500);
 				return true;
 			}else if (!this.tid) {
-				i2c.writeTo(0x18,0x32,20); //int1_ths-threshold = 250 milli g's
-				i2c.writeTo(0x18,0x33,1); //duration = 1 * 20ms
 				this.tid=setWatch(()=>{
 					//"ram";
 					i2c.writeTo(0x18,0x1);
@@ -722,6 +721,8 @@ if (set.def.acctype==="BMA421"){
 		}
 	};
 }
+
+eval(require('Storage').read("heartrate.js"));
 
 var slsnds = 0; // seconds within non-movement
 var mvsnds = 0; // seconds within movement
