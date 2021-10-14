@@ -71,6 +71,7 @@ var set={
 			}else gIsB=0;
 		 }
 	},
+	updateSensorVal:function(){require('Storage').write('valuedef.json', valdef);},
 	updateSettings:function(){require('Storage').write('setting.json', set.def);},
 	resetSettings:function() {
 		set.def = {
