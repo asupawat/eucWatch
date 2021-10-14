@@ -514,9 +514,9 @@ if (set.def.acctype==="BMA421"){
 		tid:0,
 		run:0,
 		up:0,
-    accx:0,
-    accy:0,
-    accz:0,
+    x:0,
+    y:0,
+    z:0,
     mag:0,
     diff:0,
     accloop:0,
@@ -590,13 +590,13 @@ if (set.def.acctype==="BMA421"){
       var y = conv(a[2],a[3]);
       var z = conv(a[4],a[5]);
       var m = Math.round((x*x + y*y + z*z)/8192);
-      var dx = x-this.accx;
-      var dy = y-this.accy;
-      var dz = z-this.accz;
+      var dx = x-this.x;
+      var dy = y-this.y;
+      var dz = z-this.z;
       var d = Math.round((dx*dx + dy*dy + dz*dz)/100);
-      this.accx = x;
-      this.accy = y;
-      this.accz = z;
+      this.x = x;
+      this.y = y;
+      this.z = z;
       this.mag = m;
       this.diff = d;
 			return {ax:x, ay:y, az:z, mag:m, diff:d};
@@ -698,13 +698,13 @@ if (set.def.acctype==="BMA421"){
       var y = conv(a[2],a[3]);
       var z = conv(a[4],a[5]);
       var m = Math.round((x*x + y*y + z*z)/8192);
-      var dx = x-this.accx;
-      var dy = y-this.accy;
-      var dz = z-this.accz;
+      var dx = x-this.x;
+      var dy = y-this.y;
+      var dz = z-this.z;
       var d = Math.round((dx*dx + dy*dy + dz*dz)/100);
-      this.accx = x;
-      this.accy = y;
-      this.accz = z;
+      this.x = x;
+      this.y = y;
+      this.z = z;
       this.mag = m;
       this.diff = d;
 			return {ax:x, ay:y, az:z, mag:m, diff:d};
