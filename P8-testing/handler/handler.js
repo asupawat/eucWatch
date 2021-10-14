@@ -1,6 +1,7 @@
 //handler
 //fonts
 require('Font7x11Numeric7Seg').add(Graphics);
+eval(STOR.read("heartrate.js"));
 //notifications
 var notify={
 	New:0,nIm:0,nInfo:0,nCall:0,nMail:0
@@ -613,9 +614,9 @@ if (set.def.acctype==="BMA421"){
 		ori:[65,66],
 		loop:0,
 		tid:0,
-    accx:0,
-    accy:0,
-    accz:0,
+    x:0,
+    y:0,
+    z:0,
     mag:0,
     diff:0,
     process:0,
