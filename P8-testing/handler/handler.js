@@ -640,10 +640,12 @@ if (set.def.acctype==="BMA421"){
     ess_stddev:[],
     check:(t)=>{
       if (acc.process) {
+        if(!set.def.acc) acc.disable();
         clearInterval(acc.process);
         acc.process=0;
       }
       if(t>=80) { // 12.5 Hz - min
+        acc.enable();
         acc.process=setInterval(()=>{
           var val=acc.read();
           acc.emit("accel");
