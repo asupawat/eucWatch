@@ -239,7 +239,7 @@ var HRS = {
       HRS.process=0;
       HRS.disable();
     }
-    if(acc.process && !set.def.slm && (Date().getHours()>=valdef.sleeptime[0] || Date().getHours()<valdef.sleeptime[2])) acc.check(0);
+    if(acc.process && !(set.def.slm && (Date().getHours()>=valdef.sleeptime[0] || Date().getHours()<valdef.sleeptime[2]))) acc.check(0);
   },
 };
 HRS.disable();
