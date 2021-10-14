@@ -172,9 +172,14 @@ var HRS = {
         if (pulseDetector.isBeat(v)) {
           beatcount=0;
           var bpm = correlator.bpm();
-          if (bpm > 0 && bpm < 200) {
-            HRS.bpm.push(bpm);
-            if(bpmtime>128) bpm = avgMedFilter.filter(bpm);
+          if (bpm > 10 && bpm < 200) {
+            if(bpmtime>128) {
+              bpm = avgMedFilter.filter(bpm);
+              if (bpm > 10 && bpm < 200) {
+                HRS.bpm.push(bpm);
+                print(bpm);
+              }
+            }
             if(valdef.lastbpm[0]!=bpm && bpmtime>256) { //start report ~10s
               valdef.lastbpm[0]=bpm;
               HRS.emit("bpm",{bpm:bpm});
@@ -210,8 +215,8 @@ var HRS = {
         for(let i=0;i<3;i++) {
           HRS.bpm=HRS.bpm.slice(5,HRS.bpm.length-5);
           std=StandardDeviation(HRS.bpm);
-          //print(HRS.bpm);
-          //print(std);
+          print(HRS.bpm);
+          print(std);
           if(std<12) i=3;
         }
         if(std<12 && HRS.bpm.length>=10) {
