@@ -215,7 +215,7 @@ var HRS = {
           if(std<12) i=3;
         }
         if(std<12 && HRS.bpm.length>=10) {
-          valdef.lastbpm[0]=(E.sum(HRS.bpm)/HRS.bpm.length).toFixed(0);
+          valdef.lastbpm[0]=Math.round(E.sum(HRS.bpm)/HRS.bpm.length);
           valdef.lastbpm[1]=Date().getHours();
           valdef.lastbpm[2]=Date().getMinutes();
           if(valdef.hrm.length == 12) valdef.hrm.shift();
