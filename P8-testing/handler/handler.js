@@ -1,4 +1,3 @@
-Modules.addCached("Font7x11Numeric7Seg",function(){exports.add=function(a){a.prototype.setFont7x11Numeric7Seg=function(){this.setFontCustom(atob("AAAAAAAAAAAAAAEAAAAQAgBACAAAAHvQBgDAGAL3gAAAAAAAAAAHvAAA9CGEMIYQvAAAACEMIYQwhe8AB4AIAQAgBA94ADwIQwhhDCEDwAHvQhhDCGEIHgAAAgBACAEAHvAAe9CGEMIYQveAA8CEMIYQwhe8AAABjDGAAAA96EEIIQQge8AB7wIQQghBCB4AD3oAwBgDAEAAAAPAhBCCEEL3gAPehDCGEMIQAAAe9CCEEIIQAAAAAAAA"),32,atob("BwAAAAAAAAAAAAAAAAcCAAcHBwcHBwcHBwcFAAAAAAAABwcHBwcH"),11)}}});
 //handler
 //fonts
 require('Font7x11Numeric7Seg').add(Graphics);
@@ -519,17 +518,23 @@ if (set.def.acctype==="BMA421"){
     z:0,
     mag:0,
     diff:0,
-    accloop:0,
-    process:() => {return this.accloop;},
+    process:0,
+    movehrm:0,
+    move10:0,
+    move:0,
+    nmove:0,
+    ess_values:[],
+    ess_stddev:[],
+    process_run:() => {return this.process;},
     check:(t)=>{
-      if (this.accloop) {
-        clearInterval(this.accloop);
-        this.accloop=0;
+      if (this.process) {
+        clearInterval(this.process);
+        this.process=0;
       }
       if(t>=80) { // 12.5 Hz - min
-        this.accloop=setInterval(()=>{
+        this.process=setInterval(()=>{
           var val=acc.read();
-          acc.emit("accel",val);
+          acc.emit("accel");
         },t);
       }
     },
@@ -613,17 +618,23 @@ if (set.def.acctype==="BMA421"){
     accz:0,
     mag:0,
     diff:0,
-    accloop:0,
-    process:() => {return this.accloop;},
+    process:0,
+    movehrm:0,
+    move10:0,
+    move:0,
+    nmove:0,
+    ess_values:[],
+    ess_stddev:[],
+    process_run:() => {return this.process;},
     check:(t)=>{
-      if (this.accloop) {
-        clearInterval(this.accloop);
-        this.accloop=0;
+      if (this.process) {
+        clearInterval(this.process);
+        this.process=0;
       }
       if(t>=80) { // 12.5 Hz - min
-        this.accloop=setInterval(()=>{
+        this.process=setInterval(()=>{
           var val=acc.read();
-          acc.emit("accel",val);
+          acc.emit("accel");
         },t);
       }
     },
@@ -661,7 +672,7 @@ if (set.def.acctype==="BMA421"){
 								face.go(set.dash[set.def.dash.face],0);
 						}else if (w.gfx.isOn&&face.pageCurr!=-1) {
 							if (set.tor==1)w.gfx.bri.set(face[0].cbri);
-							else if ( !set.def.off[face.appCurr] || ( set.def.off[face.appCurr] &&  set.def.off[face.appCurr] <= 60000)) 
+							else if ( !set.def.off[face.appCurr] || ( set.def.off[face.appCurr] &&  set.def.off[face.appCurr] <= 60000))
 								face.off(1500);
 						}
 						this.up=0;
@@ -711,6 +722,52 @@ if (set.def.acctype==="BMA421"){
 		}
 	};
 }
+
+var slsnds = 0; // seconds within non-movement
+var mvsnds = 0; // seconds within movement
+acc.on("accel", ()=>{
+  if(acc.process_run()) {
+    var val = acc.mag;
+    acc.ess_values.push(val);
+    if (acc.ess_values.length == 13) {
+      // calculate standard deviation over ~1s 
+      const mean = acc.ess_values.reduce((prev,cur) => cur+prev) / acc.ess_values.length;
+      const stddev = Math.sqrt(acc.ess_values.map(val => Math.pow(val-mean,2)).reduce((prev,cur) => prev+cur)/acc.ess_values.length);
+      if(acc.ess_stddev.length >= 3) {
+        //save avg movement during hrm-run
+        if(stddev > 6 && HRS.process_run()) acc.movehrm=(acc.movehrm+stddev)/2;
+        if(stddev > 6 && acc.ess_stddev[1] > 6 && acc.ess_stddev[2] > 6) {
+          if(acc.ess_stddev[0] > 6) {
+            mvsnds++;
+            acc.move10++;
+          }
+          else {
+            mvsnds+=3;
+            acc.move10+=3;
+          }
+          if(mvsnds>=60) {
+            acc.move++;
+            mvsnds=0;
+          }
+          slsnds=0;
+        }
+        else {
+          if(slsnds >= 660) {
+            acc.nmove++;
+            slsnds=600;
+          }
+          else if(slsnds == 600) {
+            acc.nmove+=10;
+          }
+          slsnds++;
+        }
+        acc.ess_stddev.shift();
+      }
+      if(acc.ess_stddev.length<3) acc.ess_stddev.push(Math.round(stddev));
+      acc.ess_values = [];
+    }
+  }
+});
 
 cron={
 	event:{
