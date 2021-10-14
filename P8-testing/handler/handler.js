@@ -526,7 +526,6 @@ if (set.def.acctype==="BMA421"){
     nmove:0,
     ess_values:[],
     ess_stddev:[],
-    process_run:() => {return acc.process>0;},
     check:(t)=>{
       if (acc.process) {
         clearInterval(acc.process);
@@ -626,7 +625,6 @@ if (set.def.acctype==="BMA421"){
     nmove:0,
     ess_values:[],
     ess_stddev:[],
-    process_run:() => {return acc.process>0;},
     check:(t)=>{
       if (acc.process) {
         clearInterval(acc.process);
@@ -727,7 +725,7 @@ eval(require('Storage').read("heartrate.js"));
 var slsnds = 0; // seconds within non-movement
 var mvsnds = 0; // seconds within movement
 acc.on("accel", ()=>{
-  if(acc.process_run()) {
+  if(acc.process) {
     var val = acc.mag;
     acc.ess_values.push(val);
     if (acc.ess_values.length == 13) {
@@ -736,7 +734,7 @@ acc.on("accel", ()=>{
       const stddev = Math.sqrt(acc.ess_values.map(val => Math.pow(val-mean,2)).reduce((prev,cur) => prev+cur)/acc.ess_values.length);
       if(acc.ess_stddev.length >= 3) {
         //save avg movement during hrm-run
-        if(stddev > 6 && HRS.process_run()) acc.movehrm=(acc.movehrm+stddev)/2;
+        if(stddev > 6 && HRS.process) acc.movehrm=(acc.movehrm+stddev)/2;
         if(stddev > 6 && acc.ess_stddev[1] > 6 && acc.ess_stddev[2] > 6) {
           if(acc.ess_stddev[0] > 6) {
             mvsnds++;
