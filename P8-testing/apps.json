@@ -95,5 +95,15 @@
 			{"name":"call.img","url":"call.img"},
 			{"name":"nurse.img","url":"nurse.img"}
 		]
+	},
+	{ "id": "heart",
+		"name": "HRM",
+		"icon": "icon.png",
+		"version":"0.01",
+		"description": "Heart Rate",
+		"tags": "apps",
+		"storage": [
+			{"name":"heart","url":"heart.js"}
+		]
 	}
 ]
