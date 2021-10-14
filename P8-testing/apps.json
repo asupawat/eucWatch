@@ -22,7 +22,8 @@
 		"readme": "README.md",
 		"storage": [
 			{"name":"handler","url":"handler.js"},
-			{"name":"heartrate.js","url":"heartrate.js"}
+			{"name":"heartrate.js","url":"heartrate.js"},
+			{"name":"valuedef.json","url":"valuedef.json"}
 		]
 	},
 	{ "id": "main",
