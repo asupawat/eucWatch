@@ -100,7 +100,7 @@ var set={
 		};
 		set.updateSettings();
 	},
-	accR:function(){if(!this.def.dash.accE) { if (this.def.acc)acc.on(); else acc.off();}},
+	accR:function(){if(!this.def.dash.accE) { if (this.def.acc)acc.enable(); else acc.disable();}},
 	hidM:undefined, //not user settable.
 	clin:0,//not settable
 	upd:function(){ //run this for settings changes to take effect.
@@ -514,17 +514,36 @@ if (set.def.acctype==="BMA421"){
 		tid:0,
 		run:0,
 		up:0,
-		on:function(){
+    accx:0,
+    accy:0,
+    accz:0,
+    mag:0,
+    diff:0,
+    accloop:0,
+    process:() => {return this.accloop;},
+    check:(t)=>{
+      if (this.accloop) {
+        clearInterval(this.accloop);
+        this.accloop=0;
+      }
+      if(t>=80) { // 12.5 Hz - min
+        this.accloop=setInterval(()=>{
+          var val=acc.read();
+          acc.emit("accel",val);
+        },t);
+      }
+    },
+		enable:function(){
 			if (this.tid) {clearInterval(this.tid); this.tid=0;}
 			i2c.writeTo(0x18,0x7d,0x04);
 			i2c.writeTo(0x18,0x12);
 			this.yedge=253;this.xedge=20;
 			this.run=1;this.init();
 			this.tid=setInterval(function(t){
-				t.init(); 
+				t.init();
 			},this.loop,this);
 		},
-		off:function(){
+		disable:function(){
 			if (this.tid) {clearInterval(this.tid); this.tid=0;}
 			i2c.writeTo(0x18,0x7d,0x04);
 			this.run=0;
@@ -545,7 +564,7 @@ if (set.def.acctype==="BMA421"){
 					}else if (w.gfx.isOn&&face.pageCurr!=-1) {
 						if (set.tor==1)w.gfx.bri.set(face[0].cbri); 
 						else if ( !set.def.off[face.appCurr] || ( set.def.off[face.appCurr] &&  set.def.off[face.appCurr] <= 60000))
-						face.off(1500);		
+						face.off(1500);
 						this.loop=200;
 					} 
 					this.up=1;
@@ -559,16 +578,56 @@ if (set.def.acctype==="BMA421"){
 				}	
 				this.up=0;
 			}
+		},
+    read:function(){
+			function conv(lo,hi) {
+				var i = (hi<<8)+lo;
+				return ((i & 0x7FFF) - (i & 0x8000))/16;
+			}
+			i2c.writeTo(0x18,0x12);
+			var a =i2c.readFrom(0x18,6);
+      var x = conv(a[0],a[1]);
+      var y = conv(a[2],a[3]);
+      var z = conv(a[4],a[5]);
+      var m = Math.round((x*x + y*y + z*z)/8192);
+      var dx = x-this.accx;
+      var dy = y-this.accy;
+      var dz = z-this.accz;
+      var d = Math.round((dx*dx + dy*dy + dz*dz)/100);
+      this.accx = x;
+      this.accy = y;
+      this.accz = z;
+      this.mag = m;
+      this.diff = d;
+			return {ax:x, ay:y, az:z, mag:m, diff:d};
 		}
-	};	
+	};
 }else if (set.def.acctype==="SC7A20"){ //based on work from jeffmer
 	acc={
 		up:0,
-		//ori:[65,66],
 		ori:[65,66],
 		loop:0,
 		tid:0,
-		on:function(v){
+    accx:0,
+    accy:0,
+    accz:0,
+    mag:0,
+    diff:0,
+    accloop:0,
+    process:() => {return this.accloop;},
+    check:(t)=>{
+      if (this.accloop) {
+        clearInterval(this.accloop);
+        this.accloop=0;
+      }
+      if(t>=80) { // 12.5 Hz - min
+        this.accloop=setInterval(()=>{
+          var val=acc.read();
+          acc.emit("accel",val);
+        },t);
+      }
+    },
+		enable:function(v){
 			i2c.writeTo(0x18,0x20,0x4f); //CTRL_REG1 20h ODR3 ODR2 ODR1 ODR0 LPen Zen Yen Xen , 50hz, lpen1. zyx
 			i2c.writeTo(0x18,0x21,0x00); //highpass filter disabled
 			i2c.writeTo(0x18,0x22,0x40); //ia1 interrupt to INT1
@@ -580,7 +639,7 @@ if (set.def.acctype==="BMA421"){
 			i2c.writeTo(0x18,0x30,0x02); //int1 to xh
 			this.init(v);
 		},
-		off:function(){
+		disable:function(){
 			if (this.loop) { clearInterval(this.loop); this.loop=0;}
 			if (this.tid) {	clearWatch(this.tid);this.tid=0;}
 			i2c.writeTo(0x18,0x20,0x07); //Clear LPen-Enable all axes-Power down
@@ -595,13 +654,13 @@ if (set.def.acctype==="BMA421"){
 				i2c.writeTo(0x18,0x32,5); //int1_ths-threshold = 250 milli g's
 				i2c.writeTo(0x18,0x33,15); //duration = 1 * 20ms
 				if (this.loop) { clearInterval(this.loop); this.loop=0;}
-				this.loop= setInterval(()=>{	
+				this.loop= setInterval(()=>{
 					let cor=acc.read();
 					if (-1000<=cor.ax && cor.ax<=0  && cor.az<=-300 ) {
-						if (!w.gfx.isOn&&face.appCurr!=""&&this.up){  
+						if (!w.gfx.isOn&&face.appCurr!=""&&this.up){
 								face.go(set.dash[set.def.dash.face],0);
 						}else if (w.gfx.isOn&&face.pageCurr!=-1) {
-							if (set.tor==1)w.gfx.bri.set(face[0].cbri); 
+							if (set.tor==1)w.gfx.bri.set(face[0].cbri);
 							else if ( !set.def.off[face.appCurr] || ( set.def.off[face.appCurr] &&  set.def.off[face.appCurr] <= 60000)) 
 								face.off(1500);
 						}
@@ -616,29 +675,41 @@ if (set.def.acctype==="BMA421"){
 					//"ram";
 					i2c.writeTo(0x18,0x1);
 					if ( 192 < i2c.readFrom(0x18,1)[0] ) {
-						if (!w.gfx.isOn&&face.appCurr!=""){  
+						if (!w.gfx.isOn&&face.appCurr!=""){
 							if (face.appCurr=="main") face.go("main",0);
 							else face.go(face.appCurr,0);
 						}else if (w.gfx.isOn&&face.pageCurr!=-1) {
 							if (face.appCurr=="main" && face.pageCurr==2) face.go("main",0);
 							else { if (set.tor==1)w.gfx.bri.set(face[0].cbri); else face.off(); }
-						} 
+						}
 					}
 				},D8,{repeat:true,edge:"rising",debounce:50});
 				return true;
 			} else return false;
 		},
 		read:function(){
-			function conv(lo,hi) { 
+			function conv(lo,hi) {
 				var i = (hi<<8)+lo;
 				return ((i & 0x7FFF) - (i & 0x8000))/16;
 			}
 			i2c.writeTo(0x18,0xA8);
 			var a =i2c.readFrom(0x18,6);
-			//print ( "test got : ax: " + ( a[1] << 8 | a[0] ) + " ay: " + ( a[3] << 8 | a[2] ) + " az: " + ( a[5] << 8 | a[4] ) );
-			return {ax:conv(a[0],a[1]), ay:conv(a[2],a[3]), az:conv(a[4],a[5])};
-		},
-	};	
+			var x = conv(a[0],a[1]);
+      var y = conv(a[2],a[3]);
+      var z = conv(a[4],a[5]);
+      var m = Math.round((x*x + y*y + z*z)/8192);
+      var dx = x-this.accx;
+      var dy = y-this.accy;
+      var dz = z-this.accz;
+      var d = Math.round((dx*dx + dy*dy + dz*dz)/100);
+      this.accx = x;
+      this.accy = y;
+      this.accz = z;
+      this.mag = m;
+      this.diff = d;
+			return {ax:x, ay:y, az:z, mag:m, diff:d};
+		}
+	};
 }
 
 cron={
