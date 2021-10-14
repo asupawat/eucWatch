@@ -31,6 +31,7 @@ function handleMqttEvent(event) {
     let ti=(""+d[4]+" "+d[0]+" "+d[2]);
 	notify.info.unshift("{\"src\":\""+event.src+"\",\"title\":\""+event.title+"\",\"body\":\""+event.body+"\",\"time\":\""+ti+"\"}");
 }
+
 var valdef={
   hrm:[],
   sleep:[300,340,280,370],
@@ -39,6 +40,8 @@ var valdef={
   sleeptime:[21,30,6,30]
 };
 valdef = require('Storage').readJSON('valuedef.json', 1);
+//require('Storage').write('valuedef.json', valdef);
+
 //settings - run set.upd() after changing BT settings to take effect.
 var set={
 	bt:0, //Incomming BT service status indicator- Not user settable.0=not_connected|1=unknown|2=webide|3=gadgetbridge|4=eucemu|5=esp32
@@ -71,7 +74,7 @@ var set={
 			}else gIsB=0;
 		 }
 	},
-	updateSensorVal:function(){require('Storage').write('valuedef.json', valdef);},
+  updateSensorVal:function(){require('Storage').write('valuedef.json', valdef);},
 	updateSettings:function(){require('Storage').write('setting.json', set.def);},
 	resetSettings:function() {
 		set.def = {
@@ -104,7 +107,9 @@ var set={
 		bri:2, //Screen brightness 1..7
 		acctype:"0",
 		touchtype:"0",
-		buzz:1
+		buzz:1,
+    hrm:0,
+    slm:0
 		};
 		set.updateSettings();
 	},
@@ -121,7 +126,7 @@ var set={
 	}
 	if (!this.def.cli&&!this.def.gb&&!this.def.hid) { if (this.bt) NRF.disconnect(); else{ NRF.sleep();this.btsl=1;}}
 	else if (this.bt) NRF.disconnect();
-	else if (this.btsl==1) {NRF.restart();this.btsl=0;}
+	else if (this.btsl==1) {NRF.restart();init_mqtt();this.btsl=0;}
 	}
 };
 
