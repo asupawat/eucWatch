@@ -1,39 +1,11 @@
 E.kickWatchdog();
 function P8KickWd(){
-  "ram";
+	"ram";
   if(!BTN1.read())E.kickWatchdog();
 }
-var wdint=setInterval(P8KickWd,3000);
-E.enableWatchdog(30, false);
-E.showMessage=print; //apploader suport
+var wdint=setInterval(P8KickWd,4000);
+E.enableWatchdog(20, false);
 global.save = function() { throw new Error("You don't need to use save() on P8!"); };
-//load in devmode
-if (BTN1.read() || Boolean(require("Storage").read("devmode"))) { 
-  let mode=(require("Storage").read("devmode"));
-  if ( mode=="loader"){ 
-    digitalPulse(D16,1,80);
-  } else {
-    require("Storage").write("devmode","done");
-    NRF.setAdvertising({}, { name:"Espruino-devmode",connectable:true });
-    digitalPulse(D16,1,100);
-	  print("Welcome!\n*** DevMode ***\nShort press the side button\nto restart in WorkingMode");
-  }
-  setWatch(function(){
-    "ram";
-    require("Storage").erase("devmode");
-	  require("Storage").erase("devmode.info");
-    NRF.setServices({},{uart:false});
-    NRF.setServices({},{uart:true}); 
-    NRF.disconnect();
-    setTimeout(() => {
-	    reset();
-    }, 500);
-  },BTN1,{repeat:false, edge:"rising"}); 
-}else{ //load in working mode
-  /* 
-Copyright (c) 2015 Gordon Williams, Pur3 Ltd. See the file LICENSE for copying permission.
-Updated for use in Twatch by Jeff Magee
- */
 
 function ST7789() {
     var LCD_WIDTH = 240;
@@ -41,17 +13,9 @@ function ST7789() {
     var XOFF = 0;
     var YOFF = 0;
     var INVERSE = 1;
+    var cmd = lcd_spi_unbuf.command;
 
-    function dispinit(spi, dc, ce, rst,fn) {
-        function cmd(c,d) {
-            dc.reset();
-            spi.write(c, ce);
-            if (d!==undefined) {
-                dc.set();
-                spi.write(d, ce);
-            }
-        }
-
+    function dispinit(rst,fn) {
         if (rst) {
             digitalPulse(rst,0,10);
         } else {
@@ -61,9 +25,9 @@ function ST7789() {
         cmd(0x11); //SLPOUT
         setTimeout(function() {
             //MADCTL: Set Memory access control (directions), 1 arg: row addr/col addr, bottom to top refresh
-            cmd(0x36, 0xC8);
+            cmd(0x36, 0xC0);
             //COLMOD: Set color mode, 1 arg, no delay: 16-bit color
-            cmd(0x3a, 0x05);
+            cmd(0x3a, 0x03);
             //PORCTRL: Porch control
             cmd(0xb2, [0x0c, 0x0c, 0x00, 0x33, 0x33]);
             //GCTRL: Gate control
@@ -83,11 +47,9 @@ function ST7789() {
             //PWCTRL1: Power Control 1
             cmd(0xD0, [0xA4, 0xA1]);
             // PVGAMCTRL: Positive Voltage Gamma Control
-            //cmd(0xe0, [0x70, 0x15, 0x20, 0x15, 0x10, 0x09, 0x48, 0x33, 0x53, 0x0B, 0x19, 0x15, 0x2a, 0x2f]);
-            cmd(0xe0, [208, 4, 13, 17, 19, 43, 63, 84, 76, 24, 13, 11, 31, 35]);
+            cmd(0xe0, [0x70, 0x15, 0x20, 0x15, 0x10, 0x09, 0x48, 0x33, 0x53, 0x0B, 0x19, 0x15, 0x2a, 0x2f]);
             // NVGAMCTRL: Negative Voltage Gamma Contro
-            //cmd(0xe1, [0x70, 0x15, 0x20, 0x15, 0x10, 0x09, 0x48, 0x33, 0x53, 0x0B, 0x19, 0x15, 0x2a, 0x2f]);
-            cmd(0xe1, [208, 4, 12, 17, 19, 44, 63, 68, 81, 47, 31, 31, 32, 35]);
+            cmd(0xe1, [0x70, 0x15, 0x20, 0x15, 0x10, 0x09, 0x48, 0x33, 0x53, 0x0B, 0x19, 0x15, 0x2a, 0x2f]);
             if (INVERSE) {
                 //TFT_INVONN: Invert display, no args, no delay
                 cmd(0x21);
@@ -102,9 +64,7 @@ function ST7789() {
             if (fn) fn();
           }, 50);
           }, 120);
-          return cmd;
     }
-
 
     function connect(options , callback) {
         var spi=options.spi, dc=options.dc, ce=options.cs, rst=options.rst;
@@ -116,9 +76,9 @@ function ST7789() {
             colstart: XOFF,
             rowstart: YOFF
         });
-        g.lcd_sleep = function(){dc.reset(); spi.write(0x10,ce);};
-        g.lcd_wake = function(){dc.reset(); spi.write(0x11,ce);};
-        g.command = dispinit(spi, dc, ce, rst, ()=>{g.clear().setFont("6x8",2).drawString("P8 Expruino",50,100);});
+        g.lcd_sleep = function(){cmd(0x10);cmd(0x28);};
+        g.lcd_wake = function(){cmd(0x29);cmd(0x11);};
+        dispinit(rst, ()=>{g.clear().setFont("Vector",24).drawString("P8 Expruino",40,100);});
         return g;
     }
 
@@ -130,11 +90,10 @@ function ST7789() {
 
 //screen brightness function
 function brightness(v) {
-    v=v>7?1:v;	
-	digitalWrite([D23,D22,D14],7-v);
+  v=v>7?1:v;	
+digitalWrite([D23,D22,D14],7-v);
 }
 
-  var g = ST7789();
-  brightness(4);
-  
-}
+var g = ST7789();
+brightness(4);
+
