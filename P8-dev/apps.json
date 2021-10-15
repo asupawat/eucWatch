@@ -12,7 +12,7 @@
   { "id": "wecare",
     "name": "WeCare",
     "icon": "icon.png",
-    "version":"0.02",
+    "version":"0.03",
     "description": "WeCare Project",
     "tags": "core",
     "custom": "custom.html",
@@ -20,7 +20,7 @@
     "readme": "README.md",
     "storage": [
 	{"name":"devmode","url":"devmode"},
-	{"name":".boot0","url":"boot0.js"},
+	{"name":".bootrst","url":"boot0.js"},
         {"name":"lcd.js","url":"lcd.js"},
 	{"name":"accel.js","url":"accel.js"},
 	{"name":"touch.js","url":"touch_816.js"},
