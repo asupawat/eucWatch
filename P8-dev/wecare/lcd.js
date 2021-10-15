@@ -87,18 +87,6 @@ function ST7789() {
         });
         g.lcd_sleep = function(){dc.reset(); spi.write(0x10,ce);};
         g.lcd_wake = function(){dc.reset(); spi.write(0x11,ce);};
-	g.bri={
-  	    lv:((require("Storage").readJSON("setting.json",1)||{}).bri)?(require("Storage").readJSON("setting.json",1)||{}).bri:3,
-	    set:function(o){	
-	        if (o) this.lv=o; else { this.lv++; if (this.lv>7) this.lv=1; o=this.lv; }
-	        digitalWrite([D23,D22,D14],7-o);
-           	set.def.bri=o;
-	        return o;
-	    }
-        };
-        //dispinit(rst, ()=>{g.clear().setFont("6x8",2).drawString("P8 Expruino",50,100);});
-	dispinit(rst, ()=>{face.go("main",0);});
-        g.command = dispinit(spi, dc, ce, rst, ()=>{g.clear().setFont("6x8",2).drawString("P8 Expruino",50,100);});
         return g;
     }
 
