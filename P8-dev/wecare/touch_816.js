@@ -8,7 +8,7 @@ var i2c=new I2C();
 i2c.setup({scl:D7, sda:D6, bitrate:200000});
 //I2C1.setup({scl:D7,sda:D6,bitrate:200000});
 const TOUCH_PIN = D28;
-const RESET_PIN = D13;
+const RESET_PIN = D10;
 
 pinMode(TOUCH_PIN,'input');
 
