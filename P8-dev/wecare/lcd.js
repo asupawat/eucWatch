@@ -10,9 +10,17 @@ function ST7789() {
     var XOFF = 0;
     var YOFF = 0;
     var INVERSE = 1;
-    var cmd = lcd_spi_unbuf.command;
 
-    function dispinit(rst,fn) {
+    function dispinit(spi, dc, ce, rst,fn) {
+        function cmd(c,d) {
+            dc.reset();
+            spi.write(c, ce);
+            if (d!==undefined) {
+                dc.set();
+                spi.write(d, ce);
+            }
+        }
+
         if (rst) {
             digitalPulse(rst,0,10);
         } else {
@@ -44,9 +52,11 @@ function ST7789() {
             //PWCTRL1: Power Control 1
             cmd(0xD0, [0xA4, 0xA1]);
             // PVGAMCTRL: Positive Voltage Gamma Control
-            cmd(0xe0, [0x70, 0x15, 0x20, 0x15, 0x10, 0x09, 0x48, 0x33, 0x53, 0x0B, 0x19, 0x15, 0x2a, 0x2f]);
+            //cmd(0xe0, [0x70, 0x15, 0x20, 0x15, 0x10, 0x09, 0x48, 0x33, 0x53, 0x0B, 0x19, 0x15, 0x2a, 0x2f]);
+            cmd(0xe0, [208, 4, 13, 17, 19, 43, 63, 84, 76, 24, 13, 11, 31, 35]);
             // NVGAMCTRL: Negative Voltage Gamma Contro
-            cmd(0xe1, [0x70, 0x15, 0x20, 0x15, 0x10, 0x09, 0x48, 0x33, 0x53, 0x0B, 0x19, 0x15, 0x2a, 0x2f]);
+            //cmd(0xe1, [0x70, 0x15, 0x20, 0x15, 0x10, 0x09, 0x48, 0x33, 0x53, 0x0B, 0x19, 0x15, 0x2a, 0x2f]);
+            cmd(0xe1, [208, 4, 12, 17, 19, 44, 63, 68, 81, 47, 31, 31, 32, 35]);
             if (INVERSE) {
                 //TFT_INVONN: Invert display, no args, no delay
                 cmd(0x21);
@@ -61,7 +71,9 @@ function ST7789() {
             if (fn) fn();
           }, 50);
           }, 120);
+          return cmd;
     }
+
 
     function connect(options , callback) {
         var spi=options.spi, dc=options.dc, ce=options.cs, rst=options.rst;
@@ -73,20 +85,20 @@ function ST7789() {
             colstart: XOFF,
             rowstart: YOFF
         });
-        g.lcd_sleep = function(){cmd(0x10);};
-        g.lcd_wake = function(){cmd(0x11);};
-        g.bri={
-  	      lv:((require("Storage").readJSON("setting.json",1)||{}).bri)?(require("Storage").readJSON("setting.json",1)||{}).bri:3,
-	      set:function(o){	
+        g.lcd_sleep = function(){dc.reset(); spi.write(0x10,ce);};
+        g.lcd_wake = function(){dc.reset(); spi.write(0x11,ce);};
+	g.bri={
+  	    lv:((require("Storage").readJSON("setting.json",1)||{}).bri)?(require("Storage").readJSON("setting.json",1)||{}).bri:3,
+	    set:function(o){	
 	        if (o) this.lv=o; else { this.lv++; if (this.lv>7) this.lv=1; o=this.lv; }
 	        digitalWrite([D23,D22,D14],7-o);
-            set.def.bri=o;
+           	set.def.bri=o;
 	        return o;
-	      }
+	    }
         };
         //dispinit(rst, ()=>{g.clear().setFont("6x8",2).drawString("P8 Expruino",50,100);});
-		dispinit(rst, ()=>{face.go("main",0);});
-		//face.go("main",0);
+	dispinit(rst, ()=>{face.go("main",0);});
+        g.command = dispinit(spi, dc, ce, rst, ()=>{g.clear().setFont("6x8",2).drawString("P8 Expruino",50,100);});
         return g;
     }
 
