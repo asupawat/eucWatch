@@ -1,10 +1,39 @@
 E.kickWatchdog();
 function P8KickWd(){
-	"ram";
+  "ram";
   if(!BTN1.read())E.kickWatchdog();
 }
-var wdint=setInterval(P8KickWd,4000);
-E.enableWatchdog(20, false);
+var wdint=setInterval(P8KickWd,3000);
+E.enableWatchdog(30, false);
+E.showMessage=print; //apploader suport
+global.save = function() { throw new Error("You don't need to use save() on P8!"); };
+//load in devmode
+if (BTN1.read() || Boolean(require("Storage").read("devmode"))) { 
+  let mode=(require("Storage").read("devmode"));
+  if ( mode=="loader"){ 
+    digitalPulse(D16,1,80);
+  } else {
+    require("Storage").write("devmode","done");
+    NRF.setAdvertising({}, { name:"Espruino-devmode",connectable:true });
+    digitalPulse(D16,1,100);
+	  print("Welcome!\n*** DevMode ***\nShort press the side button\nto restart in WorkingMode");
+  }
+  setWatch(function(){
+    "ram";
+    require("Storage").erase("devmode");
+	  require("Storage").erase("devmode.info");
+    NRF.setServices({},{uart:false});
+    NRF.setServices({},{uart:true}); 
+    NRF.disconnect();
+    setTimeout(() => {
+	    reset();
+    }, 500);
+  },BTN1,{repeat:false, edge:"rising"}); 
+}else{ //load in working mode
+  /* 
+Copyright (c) 2015 Gordon Williams, Pur3 Ltd. See the file LICENSE for copying permission.
+Updated for use in Twatch by Jeff Magee
+ */
 
 function ST7789() {
     var LCD_WIDTH = 240;
@@ -89,6 +118,7 @@ function ST7789() {
         });
         g.lcd_sleep = function(){dc.reset(); spi.write(0x10,ce);};
         g.lcd_wake = function(){dc.reset(); spi.write(0x11,ce);};
+        g.command = dispinit(spi, dc, ce, rst, ()=>{g.clear().setFont("6x8",2).drawString("P8 Expruino",50,100);});
         return g;
     }
 
@@ -104,20 +134,7 @@ function brightness(v) {
 	digitalWrite([D23,D22,D14],7-v);
 }
 
-var g = ST7789();
-brightness(4);
-
-// graph module
-Modules.addCached("graph",function(){exports.drawAxes=function(b,c,a){function h(m){return e+n*(m-u)/z}function l(m){return f+g-g*(m-p)/v}var k=a.padx||0,d=a.pady||0,u=-k,y=c.length+k-1,p=(void 0!==a.miny?a.miny:a.miny=c.reduce((m,w)=>Math.min(m,w),c[0]))-d;c=(void 0!==a.maxy?a.maxy:a.maxy=c.reduce((m,w)=>Math.max(m,w),c[0]))+d;a.gridy&&(d=a.gridy,p=d*Math.floor(p/d),c=d*Math.ceil(c/d));var e=a.x||0,f=a.y||0,n=a.width||b.getWidth()-(e+1),g=a.height||b.getHeight()-(f+1);a.axes&&(null!==a.ylabel&&(e+=6,n-=6),null!==
-a.xlabel&&(g-=6));a.title&&(f+=6,g-=6);a.axes&&(b.drawLine(e,f,e,f+g),b.drawLine(e,f+g,e+n,f+g));a.title&&(b.setFontAlign(0,-1),b.drawString(a.title,e+n/2,f-6));var z=y-u,v=c-p;v||(v=1);if(a.gridx){b.setFontAlign(0,-1,0);var x=a.gridx;for(d=Math.ceil((u+k)/x)*x;d<=y-k;d+=x){var t=h(d),q=a.xlabel?a.xlabel(d):d;b.setPixel(t,f+g-1);var r=b.stringWidth(q)/2;null!==a.xlabel&&t>r&&b.getWidth()>t+r&&b.drawString(q,t,f+g+2)}}if(a.gridy)for(b.setFontAlign(0,0,1),d=p;d<=c;d+=a.gridy)k=l(d),q=a.ylabel?a.ylabel(d):
-d,b.setPixel(e+1,k),r=b.stringWidth(q)/2,null!==a.ylabel&&k>r&&b.getHeight()>k+r&&b.drawString(q,e-5,k+1);b.setFontAlign(-1,-1,0);return{x:e,y:f,w:n,h:g,getx:h,gety:l}};exports.drawLine=function(b,c,a){a=a||{};a=exports.drawAxes(b,c,a);var h=!0,l;for(l in c)h?b.moveTo(a.getx(l),a.gety(c[l])):b.lineTo(a.getx(l),a.gety(c[l])),h=!1;return a};exports.drawBar=function(b,c,a){a=a||{};a.padx=1;a=exports.drawAxes(b,c,a);for(var h in c)b.fillRect(a.getx(h-.5)+1,a.gety(c[h]),a.getx(h+.5)-1,a.gety(0));return a}});
-
-var data = [1,3,8,10,12,10,8,3,1];
-g.clear();
-g.setColor(0x0F0);
-require("graph").drawBar(g, data, {
-  miny: 0,
-  axes : true,
-  gridx : 1,
-  gridy : 5
-});
+  var g = ST7789();
+  brightness(4);
+  
+}
