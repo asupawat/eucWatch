@@ -9,7 +9,6 @@
 		"readme": "README.md",
 		"storage": [
 			{"name":".bootrst","url":"boot.js"},
-			{"name":"lcd.js","url":"lcd.js"},
 			{"name":"mqtt.js","url":"mqtt.js"}
 		]
 	},
