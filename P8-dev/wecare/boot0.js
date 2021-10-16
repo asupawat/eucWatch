@@ -201,7 +201,7 @@ setWatch(function(e) {
   if (!P8.awake) P8.wake();
   else {
     if(face.appCurr!="call") P8.wake("call");
-    else {
+    else if(global.inp=="undefined") {
       digitalPulse(D16,1,[80,100,40]);
       handleMqttEvent({"src":"SOS","title":"CALLING","body":"FOR HELP"});
       mqtt.publish("call", "1");
