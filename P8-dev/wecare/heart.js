@@ -25,7 +25,7 @@ function hrmHandler(hrm) {
 }
 
 function startMeasure() {
-  if (HRS.loop()) return;
+  if (HRS.process) return;
   HRS.start(30); // run for 30sec
   HRS.on("hrm-raw", hrmHandler);
   g.setColor(col("black"));
@@ -35,7 +35,7 @@ function startMeasure() {
 }
 
 function stopMeasure() {
-  if(HRS.loop()) {
+  if(HRS.process) {
     HRS.removeListener("hrm-raw", hrmHandler);
     face[0].process=1;
     HRS.stop();
@@ -79,7 +79,7 @@ face[0] = { //the first face of the hello app, called by using `face.go("hello",
     }
   },
   show : function(o){
-    if(this.process==0 && !HRS.loop() && valdef.hrm.length>0) {
+    if(this.process==0 && !HRS.process && valdef.hrm.length>0) {
       this.process=-1;
       HRS.removeListener("hrm-raw", hrmHandler);
       g.setColor(col("dgray1"));
@@ -159,7 +159,7 @@ touchHandler[0]=function(e,x,y){
     //stopMeasure();
     face.go("call",0);return;
   case 3: //slide left event
-    if (HRS.loop()) {
+    if (HRS.process) {
       stopMeasure();
       g.setFont("Vector",16);
       g.setColor(col("black"));
