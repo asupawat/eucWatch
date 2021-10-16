@@ -3,32 +3,55 @@
 face[0] = { //the first face of the call app, called by using `face.go("call",0)` from the cli.
   offms: 10000, //face timeout, will fall to face[1] after it, face[1] is a redirection face, not actually visible.
   init: function(o){ //put here the elements of the page that will not need refreshing and initializations.
-    //the way g.setColor is used on this project is not the espruino default. You can see changes on it at the init file. The screen driver is set at two colors mode to save on ram, and a flip is used when more colors are needed. The first argument is the color space, 0 or 1, the second argument is the actual color in 12-bit Color code. https://rangevoting.org/ColorCode.html#
-    g.setColor(col("dgray1")); //header
-    g.fillRect(0,0,239,35); 
+    //the way g.setColor https://rangevoting.org/ColorCode.html#
+    if(global.inp==null) global.inp="undefined";
+    //print("o :",o);
+    //print("inp :",global.inp);
+    g.setColor(col("dgray1"));
+    g.fillRect(0,0,239,35);
     g.setColor(col("lblue"));
     g.setFont("Vector",25);
-    if(o=="acp" || this.inp=="acp") {
-      g.setColor("#0F0");
-      g.fillCircle(120,110,95);
-      g.drawImage(require("Storage").read("nurse.img"),55,17);
-      if(o=="acp") {
-        digitalPulse(D16,1,[200,300,100,100,100]);
-        handleMqttEvent({"src":"ADMIN","title":"NURSE","body":"IS COMING"});
-      }
-      if(this.inp=="acp") mqtt.publish("user", "answer");
-    } else if(o=="ack") {
-      g.drawString("CALLING NURSE",15,6);
-      g.setColor("#0F0");
-      g.drawImage(require("Storage").read("call.img"),30,45);
-      digitalPulse(D16,1,[80,100,40]); //send double buzz pulse to indicate tap was acknowledged.
-    }
-    else {
+    if(o=="0") {
+      o="undefined";
+      digitalPulse(D16,1,[80,100,40]);
+      face.go("main",0);
+    } else if(o=="undefined" && global.inp=="undefined") {
       g.drawString("CALL NURSE",40,6);
       g.setColor("#F00");
-      g.drawImage(require("Storage").read("call.img"),30,45);
+      g.drawImage(require("Storage").read("call.img"),30,55);
+    } else if(o=="1" || (global.inp=="1" && o=="undefined")) {
+      this.offms=3000;
+      if(o=="1") digitalPulse(D16,1,[80,100,40]); //send double buzz pulse
+      if(o=="undefined") o=global.inp;
+      g.drawString("CALLING NURSE",15,6);
+      g.setColor("#0F0");
+      g.drawImage(require("Storage").read("call.img"),30,55);
+    } else {
+      //clear calling loop
+      if (global.calling) {clearInterval(global.calling);global.calling=0;}
+      this.offms=8000;
+      g.setFont("Vector",22);
+      g.drawString("NURSE IS COMING",120-(g.stringWidth("NURSE IS COMING")/2),9);
+      g.setColor(col("white"));
+      g.setFont("Vector",25);
+      if(o=="undefined") {
+        o=global.inp;
+        g.drawString(o,120-(g.stringWidth(o)/2),55);
+        g.setColor("#0F0");
+        g.fillRect(30,110,210,200);
+        g.setColor(col("black"));
+        g.setFont("Vector",50);
+        g.drawString("OK",120-(g.stringWidth("OK")/2),135);
+      } else {
+        g.drawString(o,120-(g.stringWidth(o)/2),55);
+        digitalPulse(D16,1,[200,300,100,100,100]);
+        handleMqttEvent({"src":"NURSE","title":o,"body":"IS COMING"});
+        mqtt.publish("call", "3");
+        g.setColor(col("white"));
+        g.drawImage(require("Storage").read("nurse.img"),70,90,{scale:0.7});
+      }
     }
-    this.inp=o;
+    global.inp=o;
     this.btn=0;
     this.last_btn=this.btn;
 	  this.run=true;
@@ -37,8 +60,6 @@ face[0] = { //the first face of the call app, called by using `face.go("call",0)
     if (!this.run) return;
     if (this.btn!==this.last_btn){
       this.last_btn=this.btn;
-      //g.setColor("#F00");
-      //g.drawImage(require("Storage").read("call.img"),30,20);
     }
     this.tid=setTimeout(function(t){ //the face's screen refresh rate. 
       t.tid=-1;
@@ -66,14 +87,8 @@ face[1] = {
   return true;
   },//only use this part of the face to set redirection.
   show : function(){
-  //face.go(face.appRoot[0],face.appRoot[1]); //go to the previous face on screen of the previous app.  
-	//face.go(face.appPrev,face.pagePrev); //go to the previous face on screen, even if it was on the same app. 
-	//face.go("main",-1);//sleep and set this face as the on_wake face. 
-	//face.go("main",0);//go to main Clock face.
-    if(face[0].inp=="acp") face.go("call",-1);
+    if(face[0].inp!="undefined" || face[0].inp!="1") face.go("call",-1);
     else face.go("main",-1);
-    //face.appPrev="call";
-    //face.pagePrev=0;
     return true;
   },
    clear: function(){
@@ -83,40 +98,42 @@ face[1] = {
    P8.sleep();
    this.clear();
   }
-};	
+};
 //touch actions are set here, e is the event, x,y are the coordinates on screen.
-touchHandler[0]=function(e,x,y){ 
+touchHandler[0]=function(e,x,y){
+  if(e!=12 && global.inp!="undefined" && global.inp!="1") return;
   switch (e) {
   case 5: //tap event
 	  //digitalPulse(D16,1,50);
     face[0].btn=1-face[0].btn;
     break;
   case 1: //slide down event-on directional swipes the x,y indicate the point of starting the swipe, so one can swipe up/dn on buttons like on the brightenss button at the main settings face.
-    if(face[0].inp=="acp") mqtt.publish("user", "answer");
     face.go("heart",0);return;
     //break;
   case 2: //slide up event
-    if(face[0].inp=="acp") mqtt.publish("user", "answer");
     face.go("main",0);
     return true;
   case 3: //slide left event
-    if(face[0].inp=="acp") mqtt.publish("user", "answer");
     face.go("main",-1);
     return true;
   case 4: //slide right event (back action)
   case 12: //touch and hold(long press) event
-    if(face[0].inp=="acp") {
-      mqtt.publish("user", "answer");
-      face.go("main",-1);
+    if(global.inp!="undefined" && global.inp!="1") {
+      handleMqttEvent({"src":"NURSE","title":global.inp,"body":"TAKE ACTION"});
+      print("Accepted!");
+      mqtt.publish("call", "0");
       return true;
-    }
-    else if(face[0].inp=="ack") {
-      face.go("main",-1);
-      return true;
-    } else {
-      handleMqttEvent({"src":"PATIENT","title":"CALLING","body":"FOR HELP"});
-      mqtt.publish("call", "help");
+    } else if(face[0].o=="undefined" && global.inp=="undefined") {
+      face[0].offms=3000;
+      print("Calling!");
       digitalPulse(D16,1,[80,100,40]);
+      handleMqttEvent({"src":"PATIENT","title":"CALLING","body":"FOR HELP"});
+      mqtt.publish("call", "1");
+      if (global.calling) {clearInterval(global.calling);global.calling=0;}
+      global.calling=setInterval(()=>{
+        print("Re-Calling!");
+        mqtt.publish("call", "2");
+			},300000); //300000=5min
       break;
     }
     digitalPulse(D16,1,40);
