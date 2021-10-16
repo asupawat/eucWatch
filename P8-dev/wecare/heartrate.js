@@ -240,7 +240,7 @@ var HRS = {
   stop:()=>{
     if (HRS.process) {
       clearInterval(HRS.process);
-      HRS.processF=0;
+      HRS.process=0;
       HRS.disable();
     }
     if(ACCEL.process && !(set.def.slm && (Date().getHours()>=valdef.sleeptime[0] || Date().getHours()<valdef.sleeptime[2]))) ACCEL.check(0);
