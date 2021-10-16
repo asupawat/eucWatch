@@ -90,7 +90,7 @@ var HRS = {
       i2c.writeTo(0x44, a);
       return i2c.readFrom(0x44,1)[0];
   },
-  loop:() => {return this.hrmloop;},
+  process:0,
   enable:() => {
     HRS.writeByte( 0x17, 0b00001101 ); //00001101  bits[4:2]=011,HRS gain 8
     HRS.writeByte( 0x16, 0x78 ); //01111000  bits[3:0]=1000,HRS 16bits
@@ -135,32 +135,32 @@ var HRS = {
       HRS.stop();
       print("***stop hrm log");
     }
-    if(!ACCEL.loop() && set.def.slm) ACCEL.check(80);
+    if(!ACCEL.process && set.def.slm) ACCEL.check(80);
     if(t) {
       print("***start hrm log");
       this.hrmlog=setInterval(()=>{
-        if(!this.hrmloop) HRS.start(30);
+        if(!HRS.process) HRS.start(30);
       },(t*60*1000)); // t minute
     }
   },
   bpm:[],
   start:(t)=>{
     print("start hrm "+t+"s");
-    if (this.hrmloop) {
-      clearInterval(this.hrmloop);
-      this.hrmloop=0;
+    if (HRS.process) {
+      clearInterval(HRS.process);
+      HRS.process=0;
       HRS.disable();
-      if(ACCEL.loop() && !set.def.slm && (Date().getHours()>=valdef.sleeptime[0] || Date().getHours()<valdef.sleeptime[2])) ACCEL.check(0);
+      if(ACCEL.process && !set.def.slm && (Date().getHours()>=valdef.sleeptime[0] || Date().getHours()<valdef.sleeptime[2])) ACCEL.check(0);
     }
     HRS.on("hrmlog",hrmtocsv);
     HRS.enable();
-    if(!ACCEL.loop()) ACCEL.check(80); //enable accel at 12.5Hz
+    if(!ACCEL.process) ACCEL.check(80); //enable accel at 12.5Hz
     P8.movehrm=0;
     HRS.bpm=[];
     var bpmtime=0;
     var beatcount=0;
     var movetime=0;
-    this.hrmloop=setInterval(()=>{
+    HRS.process=setInterval(()=>{
       var mov1 = P8.ess_stddev[P8.ess_stddev.length-1];
       var mov2 = P8.ess_stddev[P8.ess_stddev.length-2];
       var mov3 = P8.ess_stddev[P8.ess_stddev.length-3];
@@ -174,8 +174,11 @@ var HRS = {
           beatcount=0;
           var bpm = correlator.bpm();
           if (bpm > 0 && bpm < 200) {
-            HRS.bpm.push(bpm);
-            if(bpmtime>128) bpm = avgMedFilter.filter(bpm);
+            bpm = avgMedFilter.filter(bpm);
+            if(bpmtime>128 && bpm > 10 && bpm < 200) {
+                HRS.bpm.push(bpm);
+                print(bpm);
+            }
             if(valdef.lastbpm[0]!=bpm && bpmtime>256) { //start report ~10s
               valdef.lastbpm[0]=bpm;
               HRS.emit("bpm",{bpm:bpm});
@@ -235,12 +238,12 @@ var HRS = {
     },40);
   },
   stop:()=>{
-    if (this.hrmloop) {
-      clearInterval(this.hrmloop);
-      this.hrmloop=0;
+    if (HRS.process) {
+      clearInterval(HRS.process);
+      HRS.processF=0;
       HRS.disable();
     }
-    if(ACCEL.loop() && !set.def.slm && (Date().getHours()>=valdef.sleeptime[0] || Date().getHours()<valdef.sleeptime[2])) ACCEL.check(0);
+    if(ACCEL.process && !(set.def.slm && (Date().getHours()>=valdef.sleeptime[0] || Date().getHours()<valdef.sleeptime[2]))) ACCEL.check(0);
   },
 };
 HRS.disable();
