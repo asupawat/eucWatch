@@ -149,7 +149,7 @@ if (P8.FACEUP && Boolean(STOR.read("accel.js"))){
   var slsnds = 0; // seconds within non-movement
   var mvsnds = 0; // seconds within movement
   ACCEL.on("accel",()=>{
-    if(this.accloop) {
+    if(ACCEL.process) {
       var val = P8.accmag;
       P8.ess_values.push(val);
       if (P8.ess_values.length == 13) {
@@ -158,7 +158,7 @@ if (P8.FACEUP && Boolean(STOR.read("accel.js"))){
         const stddev = Math.sqrt(P8.ess_values.map(val => Math.pow(val-mean,2)).reduce((prev,cur) => prev+cur)/P8.ess_values.length);
         if(P8.ess_stddev.length >= 3) {
           //save avg movement during hrm-run
-          if(stddev > 6 && this.hrmloop) P8.movehrm=(P8.movehrm+stddev)/2;
+          if(stddev > 6 && HRS.process) P8.movehrm=(P8.movehrm+stddev)/2;
           if(stddev > 6 && P8.ess_stddev[1] > 6 && P8.ess_stddev[2] > 6) {
             if(P8.ess_stddev[0] > 6) {
               mvsnds++;
