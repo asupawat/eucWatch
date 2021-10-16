@@ -7,7 +7,7 @@ var ACCEL = {
       i2c.writeTo(0x18, a);
       return i2c.readFrom(0x18,n); 
   },
-  loop:() => {return this.accloop;},
+  process:0,
   init:() => {
     if (set.def.acctype==="BMA421"){
       ACCEL.writeByte(0x7E, 0xB6); //Reset
@@ -39,12 +39,12 @@ var ACCEL = {
     }
   },
   check:(t)=>{
-      if (this.accloop) {
-        clearInterval(this.accloop);
-        this.accloop=0;
+      if (ACCEL.process) {
+        clearInterval(ACCEL.process);
+        ACCEL.process=0;
       }
       if(t>=80) { // 12.5 Hz - min
-        this.accloop=setInterval(()=>{
+        ACCEL.process=setInterval(()=>{
           ACCEL.read();
           ACCEL.emit("accel");
         },t);
