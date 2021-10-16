@@ -116,7 +116,9 @@ function init_mqtt() {
 
 // Answer call/help
 mqtt.on("call", function(msg){
-  P8.wake("call",msg.message);
+  if(msg.message!="2" && msg.message!="3") {
+    face.go('call', 0, msg.message);
+  }
 });
 
 // ===============================================
