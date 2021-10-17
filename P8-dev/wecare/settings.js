@@ -180,15 +180,16 @@ face[5] = {
 	while (s>86400) {s=s-86400;d++;}
 	while (s>3600) {s=s-3600;h++;}
 	while (s>60) {s=s-60;m++;}
-  g.setFont("Vector",18);
+  g.setFont("Vector",20);
 	g.setColor(col("raf"));
 	g.fillRect(0,200,115,239);
+  g.setColor(col("red"));
 	g.fillRect(125,200,239,239);
 	g.setColor(col("white"));
 	g.drawString("RESTART",15,213);
  	g.drawString("DEVMODE",132,213);
   g.setColor(colo.txt1);
-	this.buf=("MEM FREE: "+mem.free+"/"+mem.total+"\nVERSION: "+process.version+"\nACC TYPE: "+set.def.acctype+"\nTOUCH TYPE: "+set.def.touchtype+"\nUPTIME: "+d+"D-"+h+"H-"+m+"M"+"\nFLASH FREE: "+require("Storage").getFree()+"\nTEMPERATURE: "+E.getTemperature()+"\nNAME: "+set.def.name);
+	this.buf=("\nID: "+NRF.getAddress().toUpperCase()+"\nNAME: "+set.def.name+"\nMEM FREE: "+mem.free+"/"+mem.total+"\nVERSION: "+process.version+"\nACC TYPE: "+set.def.acctype+"\nTOUCH TYPE: "+set.def.touchtype+"\nUPTIME: "+d+"D-"+h+"H-"+m+"M"+"\nFLASH FREE: "+require("Storage").getFree()+"\nTEMPERATURE: "+E.getTemperature());
 	g.drawString(this.buf,120-(g.stringWidth(this.buf)/2),0);
   face[0].appImgNone=0;
   },
@@ -367,7 +368,13 @@ touchHandler[5]=function(e,x,y){
         NRF.disconnect();
         g.setColor(0);g.clear();
 		    reset();
-	    } else  digitalPulse(D16,1,40);
+      }else if (x>120 && y>190) {
+ 	      set.updateSettings();
+        NRF.disconnect();
+        require("Storage").write("devmode","dev");
+        g.setColor(0);g.clear();
+        E.reboot();}
+     else digitalPulse(D16,1,40);
     }else if  (e==1){
       face[0].btSetOn=1;
 	    face.go("settings",0);return;
