@@ -22,7 +22,7 @@ var TC = {
     return i2c.readFrom(0x15,n); 
   },
   getXY:()=>{
-    var _data = TC.readBytes(0x00,8);
+    var _data = TC.readBytes(0x00,7);
     return { x:((_data[3]&0x0F)<<8)|_data[4],
              y:((_data[5]&0x0F)<<8)|_data[6],
              gest:_data[1]
