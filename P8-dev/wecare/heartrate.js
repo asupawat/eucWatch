@@ -70,10 +70,7 @@ function hrmtocsv(msg) {
   if(msg.status=="done") {
     if(set.def.slm && (Date().getHours()>=valdef.sleeptime[0] || Date().getHours()<valdef.sleeptime[2])) {
       set.def.hrm=1;
-      if(P8.movehrm==0) {
-        mqtt.publish("movehrm", P8.movehrm);
-        mqtt.publish("awake", P8.move10);
-      }
+      mqtt.publish("awake", P8.move10.toString());
       f1.write([valdef.lastbpm[1]+":"+valdef.lastbpm[2],valdef.lastbpm[0],parseInt(P8.movehrm),P8.move10].join(",")+"\n");
       P8.move10=0;
     }
@@ -228,7 +225,8 @@ var HRS = {
           set.updateSensorVal();
           HRS.emit("bpm",{bpm:valdef.lastbpm[0]});
           HRS.emit("hrmlog",{status:"done"});
-          mqtt.publish("bpm", valdef.lastbpm[0]);
+          mqtt.publish("bpm", valdef.lastbpm[0].toString());
+          mqtt.publish("movehrm", P8.movehrm.toString());
         }
         else {
           HRS.emit("hrmlog",{status:"nstd"});
