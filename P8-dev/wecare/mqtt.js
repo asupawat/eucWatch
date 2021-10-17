@@ -1,6 +1,6 @@
 var mqtt = {};
 var mqttInBuf = "";
-var mqttOutBuf = "";
+var mqttOutBuf = [];
 var mqttPushTimeout;
 var sFCC = String.fromCharCode;
 
@@ -47,12 +47,16 @@ mqtt.publish = function(topic, data) {
   mqtt.emit("published");
 };
 
-mqtt.write = function(d) { 
-  mqttOutBuf+=d; 
+mqtt.write = function(d) {
+  var found=0;
+  for(let i=0;i<mqttOutBuf.length;i++) {
+    if(mqttOutBuf[i]==d) found=1;
+  }
+  if(!found) mqttOutBuf.push(d);
   if (NRF.getSecurityStatus().connected)
     pushMQTTData();
   else
-    mqttHasData(true); 
+    mqttHasData(true);
 };
 
 function mqttHasData(d) {
@@ -68,8 +72,9 @@ function pushMQTTData() {
   }
   if (mqttPushTimeout) return; // we'll get called back soon anyway
   if (!NRF.getSecurityStatus().connected) return; // no connection
-  var d = mqttOutBuf.substr(0,20);
-  mqttOutBuf = mqttOutBuf.substr(20);
+  var d = mqttOutBuf[0].substr(0,20);
+  mqttOutBuf[0] = mqttOutBuf[0].substr(20);
+  if (!mqttOutBuf[0].length) mqttOutBuf=mqttOutBuf.slice(1);
   NRF.updateServices({
   'ac910001-43be-801f-3ffc-65d26351c312' : {
     'ac910003-43be-801f-3ffc-65d26351c312': { // rx - from node TO bridge
@@ -84,7 +89,7 @@ function pushMQTTData() {
     },100);
   }
   else {
-    mqttHasData(false);
+    if (!mqttOutBuf.length) mqttHasData(false);
   }
 }
 
