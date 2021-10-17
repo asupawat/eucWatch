@@ -8,7 +8,11 @@ face[0] = {
   init: function(o){
     var d=(Date()).toString().split(' ');
     var t=(d[4]).toString().split(':');
-    g.setColor(col("dgray1")); //header
+    if(!valdef.sleeptime.length) {
+      valdef.sleeptime=[21,30,6,0];
+      set.updateSensorVal();
+    }
+    g.setColor(col("dgray1"));
     g.fillRect(0,0,239,35);
     g.setColor(col("lblue"));
     g.setFont("Vector",25);
