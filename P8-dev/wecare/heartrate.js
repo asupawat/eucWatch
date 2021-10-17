@@ -71,9 +71,10 @@ function hrmtocsv(msg) {
     if(set.def.slm && (Date().getHours()>=valdef.sleeptime[0] || Date().getHours()<valdef.sleeptime[2])) {
       set.def.hrm=1;
       if(P8.movehrm==0) {
+        mqtt.publish("movehrm", P8.movehrm);
         mqtt.publish("awake", P8.move10);
       }
-      f1.write([valdef.lastbpm[1]+":"+valdef.lastbpm[2],valdef.lastbpm[0],P8.movehrm.toFixed(0),P8.move10].join(",")+"\n");
+      f1.write([valdef.lastbpm[1]+":"+valdef.lastbpm[2],valdef.lastbpm[0],parseInt(P8.movehrm),P8.move10].join(",")+"\n");
       P8.move10=0;
     }
     if(set.def.hrm) {
@@ -219,7 +220,7 @@ var HRS = {
           if(std<12) i=3;
         }
         if(std<12 && HRS.bpm.length>=10) {
-          valdef.lastbpm[0]=(E.sum(HRS.bpm)/HRS.bpm.length).toFixed(0);
+          valdef.lastbpm[0]=parseInt(E.sum(HRS.bpm)/HRS.bpm.length);
           valdef.lastbpm[1]=Date().getHours();
           valdef.lastbpm[2]=Date().getMinutes();
           if(valdef.hrm.length == 12) valdef.hrm.shift();
