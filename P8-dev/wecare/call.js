@@ -5,8 +5,8 @@ face[0] = { //the first face of the call app, called by using `face.go("call",0)
   init: function(o){ //put here the elements of the page that will not need refreshing and initializations.
     //the way g.setColor https://rangevoting.org/ColorCode.html#
     if(global.inp==null) global.inp="undefined";
-    //print("o :",o);
-    //print("inp :",global.inp);
+    print("o :",o);
+    print("inp :",global.inp);
     g.setColor(col("dgray1"));
     g.fillRect(0,0,239,35);
     g.setColor(col("lblue"));
@@ -117,6 +117,8 @@ touchHandler[0]=function(e,x,y){
     face.go("main",-1);
     return true;
   case 4: //slide right event (back action)
+    face.go("main",0);
+    return true; 
   case 12: //touch and hold(long press) event
     if(global.inp!="undefined" && global.inp!="1") {
       handleMqttEvent({"src":"NURSE","title":global.inp,"body":"TAKE ACTION"});
@@ -127,13 +129,13 @@ touchHandler[0]=function(e,x,y){
       return true;
     } else if(face[0].o=="undefined" && global.inp=="undefined") {
       face[0].offms=3000;
-      //print("Calling!");
+      print("Calling!");
       digitalPulse(D16,1,[80,100,40]);
       handleMqttEvent({"src":"PATIENT","title":"CALLING","body":"FOR HELP"});
       mqtt.publish("call", "1");
       if (global.calling) {clearInterval(global.calling);global.calling=0;}
       global.calling=setInterval(()=>{
-        //print("Re-Calling!");
+        print("Re-Calling!");
         mqtt.publish("call", "2");
 			},300000); //300000=5min
       break;
