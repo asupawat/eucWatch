@@ -205,6 +205,10 @@ setWatch(function(e) {
       digitalPulse(D16,1,[80,100,40]);
       handleMqttEvent({"src":"SOS","title":"CALLING","body":"FOR HELP"});
       mqtt.publish("call", "1");
+      global.calling=setInterval(()=>{
+        //print("Re-Calling!");
+        mqtt.publish("call", "2");
+			},300000); //300000=5min
     }
   }
 }, BTN1, { repeat: true, edge: 'rising', debounce: 50 });
