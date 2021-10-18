@@ -6,10 +6,17 @@ var sFCC = String.fromCharCode;
 
 mqtt.onData = function(data) {
   mqttInBuf += data;
+  //var mqttInBuf="1\7\0\4call1?";
   var cmd = mqttInBuf.charCodeAt(0);
   var len = mqttInBuf.charCodeAt(1)+2;
   var var_len = mqttInBuf.charCodeAt(3);
+  var checksum = mqttInBuf.charCodeAt(len);
   var msg;
+  var cksum=0x3e;
+  for(let i=0;i<(mqttInBuf.length-1);i++) {
+    cksum^=mqttInBuf.charCodeAt(i);
+    //print(cksum);
+  }
   if (len <= mqttInBuf.length) {
 	  switch(cmd >> 4) {
       case 2: { // CONNACK
@@ -24,9 +31,9 @@ mqtt.onData = function(data) {
         var topic = mqttInBuf.substr(4, var_len);
 		    msg = {
 			    topic: topic,
-			    message: mqttInBuf.substr(4+var_len, len-var_len)
+			    message: mqttInBuf.substr(4+var_len, len-var_len-4)
 		    };
-        mqtt.emit(topic, msg);
+        if(checksum==cksum) mqtt.emit(topic, msg);
       } break;
 	  }
     mqttInBuf="";
@@ -38,7 +45,14 @@ function mqStr(str) {
 }
 
 function mqPkt(cmd, variable, payload) {
-  return sFCC(cmd, variable.length + payload.length) + variable + payload;
+  var data=sFCC(cmd, variable.length + payload.length) + variable + payload;
+  //var data="1\7\0\4call1";
+  var cksum=0x3e;
+  for(let i=0;i<data.length;i++) {
+    cksum^=data.charCodeAt(i);
+    print(cksum);
+  }
+  return data + sFCC(cksum);
 }
 
 mqtt.publish = function(topic, data) {
