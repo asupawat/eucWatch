@@ -18,7 +18,15 @@ mqtt.onData = function(data) {
     cksum^=mqttInBuf.charCodeAt(i);
     //print(cksum);
   }
-  if (len <= mqttInBuf.length) {
+  if(msg_id==255 && checksum==cksum) {
+    var name = mqttInBuf.substr(4, var_len);
+		msg = {
+			name: name,
+			value: mqttInBuf.substr(4+var_len, len-var_len-4)
+		};
+    mqtt.emit("conf", msg);
+  }
+  else if (len <= mqttInBuf.length && checksum==cksum) {
 	  switch(cmd >> 4) {
       case 2: { // CONNACK
         var bridge = mqttInBuf.substr(4, var_len);
@@ -34,7 +42,7 @@ mqtt.onData = function(data) {
 			    topic: topic,
 			    message: mqttInBuf.substr(4+var_len, len-var_len-4)
 		    };
-        if(checksum==cksum && msg_id!=global.msg_id) {
+        if(msg_id!=global.msg_id) {
           if(msg_id) global.msg_id=msg_id;
           mqtt.emit(topic, msg);
         }
@@ -141,6 +149,16 @@ function init_mqtt() {
 mqtt.on("call", function(msg){
   if(msg.message!="2" && msg.message!="3") {
     P8.wake('call', msg.message);
+  }
+});
+
+// Answer for config
+mqtt.on("conf", function(msg){
+  if(msg.name=="name") {
+    set.def.name=msg.value;
+    set.updateSettings();
+    digitalPulse(D16,1,40);
+    P8.wake('main');
   }
 });
 
