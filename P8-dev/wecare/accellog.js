@@ -1,7 +1,7 @@
 //accellog
 //code is based on a structure fanoush had on dsd6 scripts. 
 face[0] = { //the first face of the hello app, called by using `face.go("hello",0)` from the cli.
-  offms: 600000, //face timeout, will fall to face[1] after it, face[1] is a redirection face, not actually visible.
+  offms: 3000, //face timeout
   init: function(o){ //put here the elements of the page that will not need refreshing and initializations.
     g.setColor(col("dgray1")); //header
     g.fillRect(0,0,239,35); 
@@ -86,8 +86,8 @@ face[1] = {
   //face.go(face.appRoot[0],face.appRoot[1]); //go to the previous face on screen of the previous app.  
 	//face.go(face.appPrev,face.pagePrev); //go to the previous face on screen, even if it was on the same app. 
   //face.go("hello",-1); //sleep and set this face as the on_wake face. 
-	  face.go("accellog",-1);//sleep and set this face as the on_wake face. 
-	//face.go("main",0);//go to main Clock face. 
+	//face.go("accellog",-1);//sleep and set this face as the on_wake face. 
+	  face.go("main",0);//go to main Clock face. 
     return true;
   },
    clear: function(){
@@ -105,17 +105,16 @@ touchHandler[0]=function(e,x,y){
 	  digitalPulse(D16,1,50);
     face[0].btn=1-face[0].btn;
     break;
-  case 1: //slide down event-on directional swipes the x,y indicate the point of starting the swipe, so one can swipe up/dn on buttons like on the brightenss button at the main settings face. 
-    face.go("main",0);return;
+  case 1: //slide down event
+    face.go("accellog",-1);return;
     //break;
   case 2: //slide up event
-    face.go(face.appPrev,face.pagePrev);return;
+    face.go("main",0);return;
   case 3: //slide left event
-    digitalPulse(D16,1,40);
+    face.go("main",0);return;
     break;
-  case 4: //slide right event (back action)
-    face.go(face.appPrev,face.pagePrev);return; //return when changing faces, so that this action will not reset this face timeout. 
-    //break;
+  case 4: //slide right event
+    face.go("heart",0);return;
   case 12: //touch and hold(long press) event
     digitalPulse(D16,1,40);
     break;
