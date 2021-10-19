@@ -121,12 +121,16 @@ touchHandler[0]=function(e,x,y){
     if(global.inp!="undefined" && global.inp!="1") {
       handleMqttEvent({"src":"NURSE","title":global.inp,"body":"TAKE ACTION"});
       //print("Accepted!");
-      face[0].offms+=5000;
+      face[0].offms=3000;this.timeout();
       digitalPulse(D16,1,[80,100,40]);
       mqtt.publish("call", "0");
       return true;
     } else if(face[0].o=="undefined" && global.inp=="undefined") {
       //print("Calling!");
+      //set display show to 6s
+      face[0].offms=6000;this.timeout();
+      //set next display show to 3s
+      face[0].offms=3000;
       digitalPulse(D16,1,[80,100,40]);
       handleMqttEvent({"src":"PATIENT","title":"CALLING","body":"FOR HELP"});
       mqtt.publish("call", "1");
@@ -135,7 +139,7 @@ touchHandler[0]=function(e,x,y){
         //print("Re-Calling!");
         mqtt.publish("call", "2");
 			},300000); //300000=5min
-      break;
+      return;
     }
     digitalPulse(D16,1,40);
     break;
