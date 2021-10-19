@@ -39,7 +39,6 @@ function stopMeasure() {
     HRS.removeListener("hrm-raw", hrmHandler);
     face[0].process=1;
     HRS.stop();
-    digitalPulse(D16,1,[60,100,30]);
   }
 }
 
@@ -146,7 +145,7 @@ face[1] = {
   }
 };
 //touch actions are set here, e is the event, x,y are the coordinates on screen.
-touchHandler[0]=function(e,x,y){ 
+touchHandler[0]=function(e,x,y){
   switch (e) {
   case 5: //tap event
     if (HRS.process) {
@@ -154,11 +153,29 @@ touchHandler[0]=function(e,x,y){
       g.setFont("Vector",16);
       g.setColor(col("black"));
       g.fillRect(240-(g.stringWidth("PAUSED")),40,239,56);
-      g.setColor(0xFD40).drawString("PAUSED",240-(g.stringWidth("PAUSED")),40);
+      g.setColor(col("red")).drawString("PAUSED",240-(g.stringWidth("PAUSED")),40);
+      digitalPulse(D16,1,[60,100,30]);
+    }
+    else if(face[0].process==1) {
+      startMeasure();
+      g.setFont("Vector",16);
+      g.setColor(col("black"));
+      g.fillRect(120,40,239,56);
+      g.setFont("Vector",32);
+      face[0].offms+=40000;
     }
     break;
   case 1: //slide down event
-    face.go("heart",-1);return;
+    if (HRS.process && face[0].process==0) {
+      stopMeasure();
+      g.setFont("Vector",16);
+      g.setColor(col("black"));
+      g.fillRect(240-(g.stringWidth("PAUSED")),40,239,56);
+      g.setColor(col("red")).drawString("PAUSED",240-(g.stringWidth("PAUSED")),40);
+      digitalPulse(D16,1,[60,100,30]);
+      break;
+    }
+    else face.go("heart",-1);return;
   case 2: //slide up event
     face.go("main",0);return;
   case 3: //slide left event
@@ -166,6 +183,10 @@ touchHandler[0]=function(e,x,y){
   case 4: //slide right event
     face.go("call",0);return;
   case 12: //touch and hold(long press) event
+    if(HRS.process) {
+      HRS.removeListener("hrm-raw", hrmHandler);
+      HRS.stop();
+    }
     startMeasure();
     g.setFont("Vector",16);
     g.setColor(col("black"));
