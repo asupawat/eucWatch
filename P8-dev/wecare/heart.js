@@ -172,9 +172,8 @@ touchHandler[0]=function(e,x,y){
     g.fillRect(120,40,239,56);
     g.setFont("Vector",32);
     face[0].offms+=40000;
-    this.timeout();
     break;
-  default: //reset face timeout on every touch action, this function is in the handler file. 
-    this.timeout();
   }
+  //reset face timeout on every touch action
+  this.timeout();
 };
