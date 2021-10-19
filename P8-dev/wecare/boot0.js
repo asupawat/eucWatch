@@ -198,8 +198,10 @@ setWatch(() =>{
   else if ((Date.now()-P8.pressedtime)>5000) reset();
 },BTN1,{repeat:true,edge:"falling"});
 setWatch(function(e) {
-  if (!P8.awake) P8.wake();
-  else {
+  if (!P8.awake) {
+    if(face.appCurr!="call" && global.inp=="undefined") P8.wake("main");
+    else P8.wake("call");
+  }else {
     if(face.appCurr!="call") P8.wake("call");
     else if(global.inp=="undefined") {
       digitalPulse(D16,1,[80,100,40]);
