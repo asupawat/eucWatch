@@ -6,9 +6,10 @@ var sFCC = String.fromCharCode;
 
 mqtt.onData = function(data) {
   mqttInBuf += data;
-  //var mqttInBuf="1\7\0\4call1?";
+  //var mqttInBuf="1$\0\3bpm1234456789012345678901234567890b";
   var cmd = mqttInBuf.charCodeAt(0);
   var len = mqttInBuf.charCodeAt(1)+2;
+  var msg_id = mqttInBuf.charCodeAt(2);
   var var_len = mqttInBuf.charCodeAt(3);
   var checksum = mqttInBuf.charCodeAt(len);
   var msg;
@@ -33,7 +34,10 @@ mqtt.onData = function(data) {
 			    topic: topic,
 			    message: mqttInBuf.substr(4+var_len, len-var_len-4)
 		    };
-        if(checksum==cksum) mqtt.emit(topic, msg);
+        if(checksum==cksum && msg_id!=global.msg_id) {
+          if(msg_id) global.msg_id=msg_id;
+          mqtt.emit(topic, msg);
+        }
       } break;
 	  }
     mqttInBuf="";
@@ -46,7 +50,7 @@ function mqStr(str) {
 
 function mqPkt(cmd, variable, payload) {
   var data=sFCC(cmd, variable.length + payload.length) + variable + payload;
-  //var data="1\7\0\4call1";
+  //var data="1$\0\3bpm1234456789012345678901234567890";
   var cksum=0x3e;
   for(let i=0;i<data.length;i++) {
     cksum^=data.charCodeAt(i);
