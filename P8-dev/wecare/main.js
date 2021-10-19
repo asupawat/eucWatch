@@ -19,9 +19,9 @@ face[0] = {
     this.min=-1;
     this.sec=-1;
     this.mem=-1;
-	this.ring=-1;
+	  this.ring=-1;
     this.run=true;
-	this.batt=-1;
+	  this.batt=-1;
     //print("exit init",getTime()-this.startTime);
 
   },
@@ -101,22 +101,26 @@ g.drawImage(require("heatshrink").decompress(atob("kEgwMAn/gA4N/+ADB/4DC8FwAbvh+
     }else if (this.batt!=set.ondc ){
       this.batt=set.ondc;
       this.v=P8.batV(1);
-      if (this.batt==1) g.setColor(colo.btnSt);
+      if (this.batt==1) g.setColor(col("purple"));
       else if (this.v<=20) g.setColor(col("red"));
-      else g.setColor(col("olive"));
+      else g.setColor(col("raf1"));
       g.fillRect(162,0,239,50);//batt
-      g.setColor(colo.txt1);
-      if (this.v<0) {g.setFont("Vector",21);g.drawString("EMPTY",240-(g.stringWidth("EMPTY")),14); 
-	  }else if (this.v<100) {g.setFont("Vector",32);g.drawString(this.v,210-(g.stringWidth(this.v)),10);
-		  g.drawImage(require("heatshrink").decompress(atob("jEYwIEBngCDg//4EGgFgggCZgv/ASUEAQQaBHYPgJYQ=")),212,12);
-	  }else  {g.setFont("Vector",28);g.drawString("FULL",238-(g.stringWidth("FULL")),12); } 
-      //print("end",getTime()-this.startTime);
+      g.setColor(col("lblue"));
+      if (this.v<0) {g.setFont("Vector",21);g.drawString("EMPTY",240-(g.stringWidth("EMPTY")),14);
+      }else if (this.v<100) {
+        g.setFont("Vector",32);
+        g.drawString(this.v,210-(g.stringWidth(this.v)),10);
+        g.drawImage((this.batt==1)?require("heatshrink").decompress(atob("jEYwIKHiACEnACHvACEv/AgH/AQcB/+AAQsAh4UBAQUOAQ8EAQgAEA==")):require("heatshrink").decompress(atob("jEYwIEBngCDg//4EGgFgggCZgv/ASUEAQQaBHYPgJYQ=")),212,12);
+      }else  {
+        g.setFont("Vector",28);
+        g.drawString("FULL",238-(g.stringWidth("FULL")),12);
+      }
     }
     this.widg();
     //loop
     this.tid=setTimeout(function(t){
-    t.tid=-1;
-    t.show();
+      t.tid=-1;
+      t.show();
     },1000,this);
   },
   widg:function(){
@@ -156,9 +160,12 @@ g.drawImage(require("heatshrink").decompress(atob("kEgwMAn/gA4N/+ADB/4DC8FwAbvh+
 		    g.drawString(notify.weather.hum,190,205); //info
 		    this.img=-1;
 	    }else {
-		  g.setColor(col("black"));
-		  g.fillRect(0,151,239,239);
-	  }
+        g.setColor(col("black"));
+        g.fillRect(0,151,239,239);
+        g.setColor(col("white"));
+        g.setFont("Vector",25);
+        g.drawString(set.def.name,119-(g.stringWidth(set.def.name)/2),170); 
+	    }
     }
   },
   time:function(){
@@ -173,25 +180,26 @@ g.drawImage(require("heatshrink").decompress(atob("kEgwMAn/gA4N/+ADB/4DC8FwAbvh+
   if (this.t[1]!=this.min ){
     this.min=this.t[1];
     g.setFont("Vector",66);
-	this.fmin=colo.txt1;
+	  this.fmin=colo.txt1;
     this.fsec=col("black");
-	if (global.alrm) {
-    if (alrm.buzz!=-1) {this.bmin=col("gray");this.fmin=col("yellow");this.fsec=col("gray");this.bsec=col("yellow");}
-    else if (alrm[1].tmr!==-1||alrm[2].tmr!==-1||alrm[3].tmr!==-1) {this.bmin=colo.btnEn;this.bsec=colo.btnEn;}
-    else  {this.bmin=col("raf2");this.fsec=col("dgray1");this.bsec=col("raf2");}
-	}else {this.bmin=col("raf2");this.fsec=col("dgray1");this.bsec=col("raf2");}
+	  if (global.alrm) {
+      if (alrm.buzz!=-1) {this.bmin=col("gray");this.fmin=col("yellow");this.fsec=col("yellow");this.bsec=col("yellow");}
+      else if (alrm[1].tmr!==-1||alrm[2].tmr!==-1||alrm[3].tmr!==-1) {this.bmin=colo.btnEn;this.fsec=col("white");this.bsec=colo.btnEn;}
+      else  {this.bmin=col("raf2");this.fsec=col("white");this.bsec=col("raf2");}
+    }else {this.bmin=col("raf2");this.fsec=col("white");this.bsec=col("raf2");}
 	g.setColor(this.bmin);
-    g.fillRect(105,55,210,150);
+    g.fillRect(105,55,240,150);
 	g.setColor(this.fmin);
     g.drawString(this.t[1],120,72);
   }
    //seconds
   g.setColor(this.bsec);
-  g.fillRect(210,55,240,150);
-  g.setColor(this.fsec);//
-  g.setFont("Vector",35);
-  g.drawString(this.s[0],218,70); //seconds
-  g.drawString(this.s[1],218,108); //seconds
+  g.fillRect(205,100,240,130);
+  g.setColor(this.fsec);
+  g.setFont("Vector",18);
+	g.drawString("24H",241-(g.stringWidth("24H")),74); //hours mode
+  g.setFont("Vector",30);
+  g.drawString(this.s[0]+this.s[1],206,101); //seconds
   //hours
   if (this.t[0]!=this.hour){
     this.hour=this.t[0];
@@ -239,7 +247,7 @@ face[1] = {
 //touch
 touchHandler[0]=function(e,x,y){
   var p=D16;
-  if (e==5){
+  if (e==TC.CLICK){
 	  if (x<158 && y<50){//date
 		  if (notify.ring){
 			  digitalPulse(p,1,[30,50,30]);
@@ -267,9 +275,9 @@ touchHandler[0]=function(e,x,y){
         face.go("notify",5,face[0].bs.substr(1).toLowerCase());return;
 		  }else digitalPulse(D16,1,40);
 	  }else digitalPulse(D16,1,40);
-  }else if  (e==1){
-		  face.go("call",0);return;
-  }else if  (e==2){
+  }else if  (e==TC.DOWN){
+		  face.go("main",-1);return;
+  }else if  (e==TC.UP){
 		if (y>160&&x<50) {
       if (g.bri.lv!==7) {this.bri=g.bri.lv;g.bri.set(7);}
       else g.bri.set(this.bri);
@@ -277,12 +285,11 @@ touchHandler[0]=function(e,x,y){
     }else if (y>190) {
 		  if (Boolean(require("Storage").read("settings"))) {face.go("settings",0);return;}
 	  } else digitalPulse(D16,1,40);
-  }else if  (e==3){
-		if (Boolean(require("Storage").read("euc"))) {face.go("euc",0);return;}
-		else if (Boolean(require("Storage").read("alarm"))) {face.go("alarm",0);return;}
-  }else if  (e==4){
+  }else if  (e==TC.LEFT){
+		face.go("call",0);return;
+  }else if  (e==TC.RIGHT){
 		if (Boolean(require("Storage").read("notify"))) {face.go("notify",0);return;}
-  }else if  (e==12){
+  }else if  (e==TC.LONG){
 	  if (150<y&&y<200){
 		  digitalPulse(D16,1,180);
 		  notify.New=0;notify.nInfo=0;notify.nCall=0;notify.nIm=0;notify.nMail=0;
