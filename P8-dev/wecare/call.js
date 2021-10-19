@@ -11,10 +11,7 @@ face[0] = { //the first face of the call app, called by using `face.go("call",0)
     g.fillRect(0,0,239,35);
     g.setColor(col("lblue"));
     g.setFont("Vector",25);
-    if(o=="0") {
-      o="undefined";
-      face.go("main",0);
-    } else if(o=="undefined" && global.inp=="undefined") {
+    if(o=="undefined" && global.inp=="undefined") {
       g.drawString("CALL NURSE",40,6);
       g.setColor("#F00");
       g.drawImage(require("Storage").read("call.img"),30,55);
@@ -121,15 +118,15 @@ touchHandler[0]=function(e,x,y){
     if(global.inp!="undefined" && global.inp!="1") {
       handleMqttEvent({"src":"NURSE","title":global.inp,"body":"TAKE ACTION"});
       //print("Accepted!");
-      face[0].offms=3000;this.timeout();
+      global.inp="undefined";
+      face[0].offms=5000;this.timeout();
       digitalPulse(D16,1,[80,100,40]);
       mqtt.publish("call", "0");
+      face.go("main",0);
       return true;
     } else if(face[0].o=="undefined" && global.inp=="undefined") {
       //print("Calling!");
-      //set display show to 6s
-      face[0].offms=6000;this.timeout();
-      //set next display show to 3s
+      face[0].offms=5000;this.timeout();
       face[0].offms=3000;
       digitalPulse(D16,1,[80,100,40]);
       handleMqttEvent({"src":"PATIENT","title":"CALLING","body":"FOR HELP"});
