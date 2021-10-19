@@ -133,7 +133,7 @@ eval(STOR.read("mqtt.js"));
 eval(STOR.read("setter.js"));
 eval(STOR.read("heartrate.js"));
 
-if (P8.FACEUP && Boolean(STOR.read("accel.js"))){ 
+if (Boolean(STOR.read("accel.js"))){
 	eval(STOR.read("accel.js"));
   ACCEL.init();
 	ACCEL.on("faceup",()=>{if (!P8.awake&&set.def.acc) P8.wake();});
