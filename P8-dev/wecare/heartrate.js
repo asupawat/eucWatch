@@ -60,23 +60,49 @@ function StandardDeviation (array) {
   return Math.sqrt(E.variance(array, mean));
 }
 
-var f1 = require("Storage").open("sleep.0.csv", "w");
-var f2 = require("Storage").open("hrm.0.csv", "w");
-
 function hrmtocsv(msg) {
   HRS.removeListener("hrmlog", hrmtocsv);
   print(msg.status);
   print(valdef.lastbpm[0]);
   if(msg.status=="done") {
-    if(set.def.slm && (Date().getHours()>=valdef.sleeptime[0] || Date().getHours()<valdef.sleeptime[2])) {
-      set.def.hrm=1;
-      mqtt.publish("awake", P8.move10.toString());
-      f1.write([valdef.lastbpm[1]+":"+valdef.lastbpm[2],valdef.lastbpm[0],parseInt(P8.movehrm),P8.move10].join(",")+"\n");
-      P8.move10=0;
+    if(set.def.slm) {
+      var tstart = valdef.sleeptime[0]*60+valdef.sleeptime[1];
+      var tstop = valdef.sleeptime[2]*60+valdef.sleeptime[3];
+      var tnow = Date().getHours()*60+Date().getMinutes();
+      var doact = false;
+      if(tstart>tstop && (tnow>=tstart || tnow<tstop)) doact=true;
+      if(tstart<tstop && (tnow>=tstart && tnow<tstop)) doact=true;
+      print(doact);
+      print(global.sleeplog);
+      if(doact) {
+        if(!global.sleeplog) {
+          print("***start sleep log");
+          global.f1 = require("Storage").open("sleep.0.csv", "w");
+          global.sleeplog=true;
+        }
+        set.def.hrm=1;
+        global.f1.write([valdef.lastbpm[1]+":"+valdef.lastbpm[2],
+                         valdef.lastbpm[0],
+                         parseInt(P8.movehrm),
+                         P8.move10].join(",")+"\n");
+        P8.move10=0;
+        mqtt.publish("awake", P8.move10.toString());
+      }
+      else {
+        if(global.sleeplog) print("***stop sleep log");
+        global.sleeplog=false;
+      }
     }
     if(set.def.hrm) {
-      f2.write([valdef.lastbpm[1]+":"+valdef.lastbpm[2],valdef.lastbpm[0],P8.movehrm.toFixed(0)].join(",")+"\n");
+      if(!global.hrmlog) {
+        global.f2 = require("Storage").open("hrm.0.csv", "w");
+        global.hrmlog=true;
+      }
+      global.f2.write([valdef.lastbpm[1]+":"+valdef.lastbpm[2],
+                       valdef.lastbpm[0],
+                       P8.movehrm.toFixed(0)].join(",")+"\n");
     }
+    else global.hrmlog=false;
   }
 }
 
@@ -126,16 +152,14 @@ var HRS = {
       return lpfFilter.filter(agcFilter.filter(medianFilter.filter(hpfFilter.filter(v))));
   },
   log:(t)=>{
-    //if(t>0) t=1; //******remove*******/
+    if(t>0) t=1; //******remove*******/
     if(this.hrmlog && !set.def.slm && !set.def.hrm) {
       clearInterval(this.hrmlog);
       this.hrmlog=0;
       HRS.stop();
-      print("***stop hrm log");
     }
     if(!ACCEL.process && set.def.slm) ACCEL.check(80);
     if(t) {
-      print("***start hrm log");
       this.hrmlog=setInterval(()=>{
         if(!HRS.process) HRS.start(30);
       },(t*60*1000)); // t minute
