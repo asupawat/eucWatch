@@ -269,6 +269,7 @@ touchHandler[0]=function(e,x,y){
         face[0].cbri=g.bri.lv+1;
         if (face[0].cbri>7) face[0].cbri=1;
         g.bri.set(face[0].cbri);
+        P8.BRIGHT=face[0].cbri;
    		  digitalPulse(D16,1,[30,50,30]);
       }
     }else if(0<x&&x<75&&158<y&&y<239){//btn7
@@ -354,6 +355,7 @@ touchHandler[0]=function(e,x,y){
 		  set.upd();
       digitalPulse(D16,1,[30,50,30]);
     }else if(77>x&&77<y&&y<159){//btn4
+      digitalPulse(D16,1,40);
       face.go("sleep",0);return;
     } else digitalPulse(D16,1,40);
   }
