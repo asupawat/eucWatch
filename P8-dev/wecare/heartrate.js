@@ -152,7 +152,7 @@ var HRS = {
       return lpfFilter.filter(agcFilter.filter(medianFilter.filter(hpfFilter.filter(v))));
   },
   log:(t)=>{
-    if(t>0) t=1; //******remove*******/
+    //if(t>0) t=1; //******remove*******/
     if(this.hrmlog && !set.def.slm && !set.def.hrm) {
       clearInterval(this.hrmlog);
       this.hrmlog=0;
