@@ -44,7 +44,7 @@ function stopMeasure() {
 }
 
 face[0] = { //the first face of the hello app, called by using `face.go("hello",0)` from the cli.
-  offms: 10000, //face timeout, will fall to face[1] after it, face[1] is a redirection face, not actually visible.
+  offms: 3000, //face timeout, will fall to face[1] after it, face[1] is a redirection face, not actually visible.
   init: function(o){ //put here the elements of the page that will not need refreshing and initializations.
     g.setColor(col("dgray1")); //header
     g.fillRect(0,0,239,35);
@@ -171,7 +171,7 @@ touchHandler[0]=function(e,x,y){
     g.setColor(col("black"));
     g.fillRect(120,40,239,56);
     g.setFont("Vector",32);
-    face[0].offms=40000;
+    face[0].offms+=40000;
     this.timeout();
     break;
   default: //reset face timeout on every touch action, this function is in the handler file. 
