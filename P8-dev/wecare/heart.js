@@ -149,16 +149,6 @@ face[1] = {
 touchHandler[0]=function(e,x,y){ 
   switch (e) {
   case 5: //tap event
-    digitalPulse(D16,1,40); //send short buzz pulse to indicate tap was not acknowledged.
-    break;
-  case 1: //slide down event
-    //stopMeasure();
-    face.go("accellog",0);return; //return when changing faces, so that this action will not reset this face timeout. 
-    //break;
-  case 2: //slide up event
-    //stopMeasure();
-    face.go("call",0);return;
-  case 3: //slide left event
     if (HRS.process) {
       stopMeasure();
       g.setFont("Vector",16);
@@ -167,7 +157,15 @@ touchHandler[0]=function(e,x,y){
       g.setColor(0xFD40).drawString("PAUSED",240-(g.stringWidth("PAUSED")),40);
     }
     break;
+  case 1: //slide down event
+    face.go("heart",-1);return;
+  case 2: //slide up event
+    face.go("main",0);return;
+  case 3: //slide left event
+    face.go("accellog",0);return;
   case 4: //slide right event
+    face.go("call",0);return;
+  case 12: //touch and hold(long press) event
     startMeasure();
     g.setFont("Vector",16);
     g.setColor(col("black"));
@@ -175,9 +173,6 @@ touchHandler[0]=function(e,x,y){
     g.setFont("Vector",32);
     face[0].offms=40000;
     this.timeout();
-    break;
-  case 12: //touch and hold(long press) event
-    digitalPulse(D16,1,40);
     break;
   default: //reset face timeout on every touch action, this function is in the handler file. 
     this.timeout();
