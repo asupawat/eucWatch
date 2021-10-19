@@ -64,58 +64,50 @@ const P8 = {
       v = v? v : 100;
 		  digitalPulse(D16,1,v);
     },
-//    batV: () => {
-//        pinMode(D31,"analog",true);
-//        var v = 7.1 * analogRead(D31);
-//        pinMode(D31,"input",true); //power saving?
-//        return v;
-//    },
-	batV: (s) => {
-        let v=7.1*analogRead(D31);
-		if (s) { v=(v*100-345)*1.43|0; //if (v>=100) v=100;
-		}
-		let hexString = ("0x"+(0x50000700+(D31*4)).toString(16));
-		poke32(hexString,2); // disconnect pin for power saving, otherwise it draws 70uA more 
-		return v;
+
+	  batV: (s) => {
+      let v=7.1*analogRead(D31);
+		  if (s) { v=(v*100-345)*1.43|0; }
+		  let hexString = ("0x"+(0x50000700+(D31*4)).toString(16));
+		  poke32(hexString,2); // disconnect pin for power saving, otherwise it draws 70uA more 
+		  return v;
     },
     isPower:()=>{return D19.read();},
     setLCDTimeout:(v)=>{P8.ON_TIME=v<5?5:v;},
     setLCDBrightness:(v)=>{P8.BRIGHT=v; brightness(v);},
     init:()=>{
-            var s = STOR.readJSON("settings.json",1)||{ontime:10, bright:4, timezone:1,faceup:true};
-            P8.ON_TIME=s.ontime;
-            P8.time_left=s.ontime;
-            P8.BRIGHT=s.bright;
-            P8.FACEUP=s.faceup;
-            E.setTimeZone(s.timezone);
+      var s = STOR.readJSON("setting.json",1)||{bri:3, timezone:7, acc:1};
+      //P8.ON_TIME=s.ontime;
+      //P8.time_left=s.ontime;
+      P8.BRIGHT=s.bri;
+      P8.FACEUP=(s.acc==1);
+      E.setTimeZone(s.timezone);
     },
     sleep:() => {
-        brightness(0);
-        TC.stop();
-        P8.emit("sleep",true);
-        g.lcd_sleep();
-        P8.awake = false;
+      brightness(0);
+      TC.stop();
+      P8.emit("sleep",true);
+      g.lcd_sleep();
+      P8.awake = false;
     },
     wake:(s,o)=> {
-        P8.time_left = P8.ON_TIME;
-        if(s=="undefined") s=face.appCurr;
-        if(o=="undefined") face.go(s,0);
-        else face.go(s,0,o);
-        TC.start();
-        //g.lcd_wake();
-        P8.emit("sleep",false);
-        //brightness(P8.BRIGHT);
-        P8.ticker = setInterval(P8.tick,1000);
-        P8.awake = true;
+      P8.time_left = P8.ON_TIME;
+      if(s=="undefined") s=face.appCurr;
+      if(o=="undefined") face.go(s,0);
+      else face.go(s,0,o);
+      TC.start();
+      //g.lcd_wake();
+      P8.emit("sleep",false);
+      //brightness(P8.BRIGHT);
+      P8.ticker = setInterval(P8.tick,1000);
+      P8.awake = true;
     },
     tick:()=>{
-        P8.time_left--;
-        if (P8.time_left<=0){
-           if (global.ACCEL) if (ACCEL.faceup) {P8.time_left = P8.ON_TIME; return;}
-           if (P8.ticker) P8.ticker=clearInterval(P8.ticker);
-           //P8.emit("sleep",true);
-           //P8.sleep();
-        }
+      P8.time_left--;
+      if (P8.time_left<=0){
+        if (global.ACCEL) if (ACCEL.faceup) {P8.time_left = P8.ON_TIME; return;}
+        if (P8.ticker) P8.ticker=clearInterval(P8.ticker);
+      }
     }
 };
 
