@@ -110,6 +110,17 @@ if (!set.def) set.resetSettings();
 //eval(require('Storage').read('handler.set')); //get defaults
 E.setTimeZone(set.def.timezone);
 
+//charging notify
+setWatch(function(s){
+	if (s.state==1) {
+		digitalPulse(D16,1,200); 
+		set.ondc=1;
+	}else {
+		digitalPulse(D16,1,[100,80,100]);
+		set.ondc=0;
+	}
+},D19,{repeat:true, debounce:500,edge:0});
+
 function bdis() {
   Bluetooth.removeListener('data',ccon);
   E.setConsole(null,{force:true});
