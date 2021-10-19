@@ -72,8 +72,6 @@ function hrmtocsv(msg) {
       var doact = false;
       if(tstart>tstop && (tnow>=tstart || tnow<tstop)) doact=true;
       if(tstart<tstop && (tnow>=tstart && tnow<tstop)) doact=true;
-      print(doact);
-      print(global.sleeplog);
       if(doact) {
         if(!global.sleeplog) {
           print("***start sleep log");
@@ -85,8 +83,8 @@ function hrmtocsv(msg) {
                          valdef.lastbpm[0],
                          parseInt(P8.movehrm),
                          P8.move10].join(",")+"\n");
-        P8.move10=0;
         mqtt.publish("awake", P8.move10.toString());
+        P8.move10=0;
       }
       else {
         if(global.sleeplog) print("***stop sleep log");
@@ -100,7 +98,7 @@ function hrmtocsv(msg) {
       }
       global.f2.write([valdef.lastbpm[1]+":"+valdef.lastbpm[2],
                        valdef.lastbpm[0],
-                       P8.movehrm.toFixed(0)].join(",")+"\n");
+                       parseInt(P8.movehrm)].join(",")+"\n");
     }
     else global.hrmlog=false;
   }
