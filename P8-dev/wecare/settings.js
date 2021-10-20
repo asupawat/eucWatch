@@ -96,11 +96,8 @@ face[0] = {
     //sleep
     if (set.def.slm!=this.slm) {
       this.slm=set.def.slm;
-      var tstart = valdef.sleeptime[0]*60+valdef.sleeptime[1];
-      var tstop = valdef.sleeptime[2]*60+valdef.sleeptime[3];
-      var tnow = Date().getHours()*60+Date().getMinutes();
       var icon_color = col("white");
-      if((tstart>tstop && (tnow>=tstart || tnow<tstop)) || (tstart<tstop && (tnow>=tstart && tnow<tstop)))
+      if(HRS.issleeptime())
         icon_color = "#0F0";
         this.btn(this.slm,0,80,75,155,require("heatshrink").decompress(atob("mUywQKH//8CxMP//ABhMD+AwKEhUAn4LKh4wKJTIAV///FxZtLMK6SggYUCGBBSDMYINFL4IDDGQxrLDAaRJDGUPAIJkBAAf8A4LFCBYoMBBIYYG//P/8/CAQAH+YQDAA4YYJRIABJRQABOQLUCDA6VXAH4AXNxR8KDEwA==")),13,94,icon_color);//btn3
       }
