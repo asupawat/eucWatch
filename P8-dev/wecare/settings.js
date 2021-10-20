@@ -84,7 +84,7 @@ face[0] = {
           g.setColor(col("gray"));
           g.fillRect(80,0,155,75);
           g.setColor(col("black"));
-        } this.btn(this.hrm,80,0,155,75,require("heatshrink").decompress(atob("mUywQ30gf/8AFC3/8BYcP///+AFBAgP/BYoMCAgQMCEYIAC4E/AgQmCBYf/DoYeCCQYAG4ASEAAwkD/gLG+AkDIIgAC4YQHEAYYL54YKAAf+DA5bPQIIYK4YYJ+H8mH/+YMHh+Dh/8DQpSB4Ew+G/4ALE8Y8BgYZB+BZCDYLIChkgQIMIngHBEQQEB8EP4fw4eAdIQ3DgH8nksMwPwY4iUB4YZBJYY3D4f8hE/TAY9Bl6+CCwLjEHoLyHEgRBCAoR7EMQQHDZAoLBgG/cI/gBYIUDeQf//AYChbzHBYRYCAAqLBAAQuEMIYADc4wLEKgphCAAY/EBYxyENoYAEJgY8FJgoLIbAYLIdQQLJgZIHJggLKACYA=")),94,15);
+        } this.btn(this.hrm,80,0,155,75,require("heatshrink").decompress(atob("mUywQ30gf/8AFC3/8BYcP///+AFBAgP/BYoMCAgQMCEYIAC4E/AgQmCBYf/DoYeCCQYAG4ASEAAwkD/gLG+AkDIIgAC4YQHEAYYL54YKAAf+DA5bPQIIYK4YYJ+H8mH/+YMHh+Dh/8DQpSB4Ew+G/4ALE8Y8BgYZB+BZCDYLIChkgQIMIngHBEQQEB8EP4fw4eAdIQ3DgH8nksMwPwY4iUB4YZBJYY3D4f8hE/TAY9Bl6+CCwLjEHoLyHEgRBCAoR7EMQQHDZAoLBgG/cI/gBYIUDeQf//AYChbzHBYRYCAAqLBAAQuEMIYADc4wLEKgphCAAY/EBYxyENoYAEJgY8FJgoLIbAYLIdQQLJgZIHJggLKACYA=")),94,15,col("red"));
 
     }
     //dnd on/off
@@ -96,7 +96,13 @@ face[0] = {
     //sleep
     if (set.def.slm!=this.slm) {
       this.slm=set.def.slm;
-        this.btn(this.slm,0,80,75,155,require("heatshrink").decompress(atob("mUywQKH//8CxMP//ABhMD+AwKEhUAn4LKh4wKJTIAV///FxZtLMK6SggYUCGBBSDMYINFL4IDDGQxrLDAaRJDGUPAIJkBAAf8A4LFCBYoMBBIYYG//P/8/CAQAH+YQDAA4YYJRIABJRQABOQLUCDA6VXAH4AXNxR8KDEwA==")),13,94);//btn3
+      var tstart = valdef.sleeptime[0]*60+valdef.sleeptime[1];
+      var tstop = valdef.sleeptime[2]*60+valdef.sleeptime[3];
+      var tnow = Date().getHours()*60+Date().getMinutes();
+      var icon_color = col("white");
+      if((tstart>tstop && (tnow>=tstart || tnow<tstop)) || (tstart<tstop && (tnow>=tstart && tnow<tstop)))
+        icon_color = "#0F0";
+        this.btn(this.slm,0,80,75,155,require("heatshrink").decompress(atob("mUywQKH//8CxMP//ABhMD+AwKEhUAn4LKh4wKJTIAV///FxZtLMK6SggYUCGBBSDMYINFL4IDDGQxrLDAaRJDGUPAIJkBAAf8A4LFCBYoMBBIYYG//P/8/CAQAH+YQDAA4YYJRIABJRQABOQLUCDA6VXAH4AXNxR8KDEwA==")),13,94,icon_color);//btn3
       }
     //acc on/off
     if (set.def.acc!=this.acc) {
