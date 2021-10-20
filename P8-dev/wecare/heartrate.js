@@ -66,7 +66,7 @@ function hrmtocsv(msg) {
   print(valdef.lastbpm[0]);
   if(msg.status=="done") {
     if(set.def.slm) {
-      if(HRS.issleeptime) {
+      if(HRS.issleeptime()) {
         if(!global.sleeplog) {
           print("***start sleep log");
           global.f1 = require("Storage").open("sleep.0.csv", "w");
@@ -158,7 +158,7 @@ var HRS = {
       HRS.logproc=0;
       HRS.stop();
     }
-    if(!ACCEL.process && set.def.slm && HRS.issleeptime) ACCEL.check(80);
+    if(!ACCEL.process && set.def.slm && HRS.issleeptime()) ACCEL.check(80);
     if(t) {
       HRS.logproc=setInterval(()=>{
         if(!HRS.process) HRS.start(30);
