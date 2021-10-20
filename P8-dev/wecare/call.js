@@ -122,6 +122,7 @@ touchHandler[0]=function(e,x,y){
       face[0].offms=5000;this.timeout();
       digitalPulse(D16,1,[80,100,40]);
       mqtt.publish("call", "0");
+      mqtt.publish("swoff",global.ledgateway);
       face.go("main",0);
       return true;
     } else if(face[0].o=="undefined" && global.inp=="undefined") {
