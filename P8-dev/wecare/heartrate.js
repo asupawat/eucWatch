@@ -106,6 +106,7 @@ var HRS = {
       i2c.writeTo(0x44, a);
       return i2c.readFrom(0x44,1)[0];
   },
+  run:0,
   process:0,
   logproc:0,
   issleeptime:() => {
@@ -119,7 +120,8 @@ var HRS = {
     HRS.writeByte( 0x17, 0b00001101 ); //00001101  bits[4:2]=011,HRS gain 8
     HRS.writeByte( 0x16, 0x78 ); //01111000  bits[3:0]=1000,HRS 16bits
     HRS.writeByte( 0x01, 0xd0 ); //11010000  bit[7]=1,HRS enable;bit[6:4]=101,wait time=50ms,bit[3]=0,LED DRIVE=12.5 mA
-    HRS.writeByte( 0x0c, 0x6e ); //00101110  bit[6]=0,LED DRIVE=12.5mA;bit[5]=0,sleep mode;p_pulse=1110,duty=50% 
+    HRS.writeByte( 0x0c, 0x6e ); //00101110  bit[6]=0,LED DRIVE=12.5mA;bit[5]=0,sleep mode;p_pulse=1110,duty=50%
+    HRS.run=1;
   },
   disable:() => {
     HRS.writeByte( 0x01, 0x08 );
@@ -143,6 +145,7 @@ var HRS = {
     HRS.writeByte( 0x0c, 0x22 );
     HRS.writeByte( 0x01, 0xf0 );
     HRS.writeByte( 0x0c, 0x02 );
+    HRS.run=0;
   },
   read:()=>{
       var m = HRS.readByte(0x09);
@@ -182,26 +185,29 @@ var HRS = {
     var bpmtime=0;
     var beatcount=0;
     var movetime=0;
+    for(let i=0;i<128;i++) correlator.put(0);
+    for(let i=0;i<7;i++) avgMedFilter.filter(0);
     HRS.process=setInterval(()=>{
       var mov1 = P8.ess_stddev[P8.ess_stddev.length-1];
       var mov2 = P8.ess_stddev[P8.ess_stddev.length-2];
       var mov3 = P8.ess_stddev[P8.ess_stddev.length-3];
       var v;
-      if(mov1<6) {
+      if(mov1<6 && HRS.run) {
         v = HRS.read();
         correlator.put(v);
       }
       if(mov1 < 6 && mov2 < 6 && mov3 < 6) {
+        if(!HRS.run) HRS.enable();
         if (pulseDetector.isBeat(v)) {
           beatcount=0;
           var bpm = correlator.bpm();
           if (bpm > 0 && bpm < 200) {
             bpm = avgMedFilter.filter(bpm);
-            if(bpmtime>128 && bpm > 10 && bpm < 200) {
+            if(bpmtime>200 && bpm > 10 && bpm < 200) { // start save after 8s
                 HRS.bpm.push(bpm);
                 print(bpm);
             }
-            if(valdef.lastbpm[0]!=bpm && bpmtime>256) { //start report ~10s
+            if(valdef.lastbpm[0]!=bpm && bpmtime>250) { //start report after 10s
               valdef.lastbpm[0]=bpm;
               HRS.emit("bpm",{bpm:bpm});
             }
@@ -218,9 +224,12 @@ var HRS = {
         bpmtime++;
         HRS.emit("hrm-raw",{raw:v});
       }
-      else {
+      else if(mov1>=6) {
         movetime++;
-        if(movetime>500) {// 20sec
+        //print("movetime: ",movetime);
+        bpmtime=0; // re-start measure
+        if(HRS.run) HRS.disable();
+        if(movetime>250) {// total 10sec force stop
           HRS.emit("hrmlog",{status:"mvdt"});
           HRS.stop();
           bpmtime=0;
