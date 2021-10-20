@@ -62,7 +62,7 @@ function mqPkt(cmd, variable, payload) {
   var cksum=0x3e;
   for(let i=0;i<data.length;i++) {
     cksum^=data.charCodeAt(i);
-    //print(cksum);
+    print(cksum);
   }
   return data + sFCC(cksum);
 }
@@ -147,6 +147,10 @@ function init_mqtt() {
 
 // Answer call/help
 mqtt.on("call", function(msg){
+  if(msg.message=="1") {
+    global.ledgateway=global.bridge;
+    global.msg_id=0;
+  }
   if(msg.message!="0" && msg.message!="2" && msg.message!="3") {
     P8.wake('call', msg.message);
   }
@@ -166,6 +170,7 @@ mqtt.on("conf", function(msg){
 
 mqtt.on("connected", function(msg){
   console.log("MQTT: connected to", msg.bridge);
+  global.bridge=msg.bridge;
   var batt = P8.batV(1);
   if(batt>100) batt=100;
   mqtt.publish("batt",batt.toString());
