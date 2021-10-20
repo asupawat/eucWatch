@@ -62,7 +62,7 @@ function mqPkt(cmd, variable, payload) {
   var cksum=0x3e;
   for(let i=0;i<data.length;i++) {
     cksum^=data.charCodeAt(i);
-    print(cksum);
+    //print(cksum);
   }
   return data + sFCC(cksum);
 }
