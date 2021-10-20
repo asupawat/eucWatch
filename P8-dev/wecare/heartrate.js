@@ -191,13 +191,10 @@ var HRS = {
       var mov1 = P8.ess_stddev[P8.ess_stddev.length-1];
       var mov2 = P8.ess_stddev[P8.ess_stddev.length-2];
       var mov3 = P8.ess_stddev[P8.ess_stddev.length-3];
-      var v;
-      if(mov1<6 && HRS.run) {
-        v = HRS.read();
-        correlator.put(v);
-      }
-      if(mov1 < 6 && mov2 < 6 && mov3 < 6) {
+      if(mov1 < 6 && mov2 < 6 && mov3 < 6 && (face.pageCurr==-1 || (face.pageCurr==0 && face.appCurr=="heart"))) {
         if(!HRS.run) HRS.enable();
+        var v = HRS.read();
+        correlator.put(v);
         if (pulseDetector.isBeat(v)) {
           beatcount=0;
           var bpm = correlator.bpm();
@@ -224,17 +221,18 @@ var HRS = {
         bpmtime++;
         HRS.emit("hrm-raw",{raw:v});
       }
-      else if(mov1>=6) {
-        movetime++;
-        //print("movetime: ",movetime);
-        bpmtime=0; // re-start measure
-        if(HRS.run) HRS.disable();
-        if(movetime>250) {// total 10sec force stop
-          HRS.emit("hrmlog",{status:"mvdt"});
-          HRS.stop();
-          bpmtime=0;
-          movetime=0;
+      else {
+        if(mov1>=6) {
+          movetime++;
+          bpmtime=0; // re-start measure
+          if(movetime>250) {// total 10sec force stop
+            HRS.emit("hrmlog",{status:"mvdt"});
+            HRS.stop();
+            bpmtime=0;
+            movetime=0;
+          }
         }
+        if(HRS.run) HRS.disable();
       }
       // stop in 30sec 25in40ms=1000ms 30sec=25*30=750
       if(bpmtime>=(25*t)) {
