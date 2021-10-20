@@ -66,13 +66,7 @@ function hrmtocsv(msg) {
   print(valdef.lastbpm[0]);
   if(msg.status=="done") {
     if(set.def.slm) {
-      var tstart = valdef.sleeptime[0]*60+valdef.sleeptime[1];
-      var tstop = valdef.sleeptime[2]*60+valdef.sleeptime[3];
-      var tnow = Date().getHours()*60+Date().getMinutes();
-      var doact = false;
-      if(tstart>tstop && (tnow>=tstart || tnow<tstop)) doact=true;
-      if(tstart<tstop && (tnow>=tstart && tnow<tstop)) doact=true;
-      if(doact) {
+      if(HRS.issleeptime) {
         if(!global.sleeplog) {
           print("***start sleep log");
           global.f1 = require("Storage").open("sleep.0.csv", "w");
@@ -113,6 +107,14 @@ var HRS = {
       return i2c.readFrom(0x44,1)[0];
   },
   process:0,
+  logproc:0,
+  issleeptime:() => {
+    var tstart = valdef.sleeptime[0]*60+valdef.sleeptime[1];
+    var tstop = valdef.sleeptime[2]*60+valdef.sleeptime[3];
+    var tnow = Date().getHours()*60+Date().getMinutes();
+    return ((tstart>tstop && (tnow>=tstart || tnow<tstop))) ||
+            (tstart<tstop && (tnow>=tstart && tnow<tstop));
+  },
   enable:() => {
     HRS.writeByte( 0x17, 0b00001101 ); //00001101  bits[4:2]=011,HRS gain 8
     HRS.writeByte( 0x16, 0x78 ); //01111000  bits[3:0]=1000,HRS 16bits
@@ -151,14 +153,14 @@ var HRS = {
   },
   log:(t)=>{
     //if(t>0) t=1; //******remove*******/
-    if(this.hrmlog && !set.def.slm && !set.def.hrm) {
-      clearInterval(this.hrmlog);
-      this.hrmlog=0;
+    if(HRS.logproc) {
+      clearInterval(HRS.logproc);
+      HRS.logproc=0;
       HRS.stop();
     }
-    if(!ACCEL.process && set.def.slm) ACCEL.check(80);
+    if(!ACCEL.process && set.def.slm && HRS.issleeptime) ACCEL.check(80);
     if(t) {
-      this.hrmlog=setInterval(()=>{
+      HRS.logproc=setInterval(()=>{
         if(!HRS.process) HRS.start(30);
       },(t*60*1000)); // t minute
     }
