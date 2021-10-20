@@ -166,6 +166,7 @@ mqtt.on("conf", function(msg){
 
 mqtt.on("connected", function(msg){
   console.log("MQTT: connected to", msg.bridge);
+  mqtt.publish("batt",P8.batV(1).toString());
 });
 
 mqtt.on("published", function(){
